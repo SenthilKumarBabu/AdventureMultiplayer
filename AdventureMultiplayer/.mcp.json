@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "unity": {
+      "command": "node",
+      "args": ["C:/Users/Senthil/unity-mcp-server/src/index.js"],
+      "env": {
+        "UNITY_HUB_PATH": "C:\\Program Files\\Unity Hub\\Unity Hub.exe",
+        "UNITY_BRIDGE_PORT": "7892"
+      }
+    },
+    "blender": {
+      "command": "C:\\Users\\Senthil\\AppData\\Roaming\\Python\\Python39\\Scripts\\uvx.exe",
+      "args": ["blender-mcp"]
+    }
+  }
+}

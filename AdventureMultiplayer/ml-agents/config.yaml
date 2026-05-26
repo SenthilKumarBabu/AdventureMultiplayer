@@ -1,0 +1,42 @@
+behaviors:
+  AIBot:
+    trainer_type: ppo
+    max_steps: 10000000
+    time_horizon: 128
+    summary_freq: 10000
+
+    hyperparameters:
+      batch_size: 1024
+      buffer_size: 10240
+      learning_rate: 3.0e-4
+      learning_rate_schedule: linear
+      beta: 5.0e-3
+      epsilon: 0.2
+      lambd: 0.95
+      num_epoch: 3
+
+    network_settings:
+      normalize: true
+      hidden_units: 256
+      num_layers: 3
+      vis_encode_type: simple
+
+    reward_signals:
+      extrinsic:
+        gamma: 0.99
+        strength: 1.0
+      curiosity:
+        gamma: 0.99
+        strength: 0.02
+        encoding_size: 64
+        learning_rate: 3.0e-4
+
+# To train:
+#   mlagents-learn ml-agents/config.yaml --run-id=aibot_v1
+#   Then press Play in Unity (TrainingScene must be open).
+#
+# To resume:
+#   mlagents-learn ml-agents/config.yaml --run-id=aibot_v1 --resume
+#
+# After training, copy results/aibot_v1/AIBot.onnx into the project
+# and assign it to BehaviourParameters → Model on the Lily bot.

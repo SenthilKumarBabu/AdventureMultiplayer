@@ -1,0 +1,36 @@
+# Unity generated
+Library/
+Temp/
+Logs/
+obj/
+Build/
+Builds/
+UserSettings/
+
+# Build artifacts
+*.zip
+*.apk
+*.ipa
+*.exe
+*.app
+
+# Generated project files (IDE)
+*.csproj
+*.sln
+*.slnx
+
+# Unity auto-generated
+/[Aa]ssets/[Ss]cenes/*.unity.backup
+
+# OS
+.DS_Store
+Thumbs.db
+
+# JetBrains Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# Visual Studio
+.vs/

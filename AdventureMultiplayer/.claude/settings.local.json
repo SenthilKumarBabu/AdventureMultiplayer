@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__unity__*",
+      "Bash(*)",
+      "PowerShell(*)",
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "Skill(*)",
+      "mcp__blender__execute_blender_code"
+    ]
+  }
+}
