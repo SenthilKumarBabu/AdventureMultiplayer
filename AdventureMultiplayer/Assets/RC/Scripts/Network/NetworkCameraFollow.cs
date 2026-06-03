@@ -21,6 +21,16 @@ namespace AdventureMultiplayer
         private Vector3   m_velocity;
         private Vector3   m_smoothedLookAt;
         private Vector3   m_lookAtVelocity;
+        private Camera    m_camera;
+
+        private void Awake()
+        {
+            m_camera = GetComponent<Camera>();
+            // Hide the camera until the local player spawns and SetTarget is called.
+            // Prevents the camera from sitting at its scene-placed position (0,0,0)
+            // while the network is initialising.
+            if (m_camera != null) m_camera.enabled = false;
+        }
 
         /// <summary>
         /// Called by NetworkCameraTarget when the local player spawns.
@@ -32,9 +42,10 @@ namespace AdventureMultiplayer
             m_lookAtVelocity = Vector3.zero;
             m_velocity       = Vector3.zero;
 
-            // Snap camera to correct position immediately on spawn.
+            // Snap camera to correct position immediately on spawn, then enable.
             transform.position = target.position + offset;
             transform.LookAt(target.position);
+            if (m_camera != null) m_camera.enabled = true;
 
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible   = true;

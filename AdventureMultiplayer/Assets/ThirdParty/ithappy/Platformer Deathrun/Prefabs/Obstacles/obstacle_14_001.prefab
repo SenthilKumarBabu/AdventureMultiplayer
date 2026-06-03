@@ -190,6 +190,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5482042712779222212, guid: 23f8c0ffe3ff1e340aa225c155cea12b,
         type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5482042712779222212, guid: 23f8c0ffe3ff1e340aa225c155cea12b,
+        type: 3}
       propertyPath: m_Convex
       value: 0
       objectReference: {fileID: 0}
@@ -201,11 +206,11 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4383020300256347612, guid: 23f8c0ffe3ff1e340aa225c155cea12b,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2437923884154517541}
+      addedObject: {fileID: 9062894288792296604}
     - targetCorrespondingSourceObject: {fileID: 4383020300256347612, guid: 23f8c0ffe3ff1e340aa225c155cea12b,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 9062894288792296604}
+      addedObject: {fileID: 2576702862342787047}
   m_SourcePrefab: {fileID: 100100000, guid: 23f8c0ffe3ff1e340aa225c155cea12b, type: 3}
 --- !u!1 &2617406802179656258 stripped
 GameObject:
@@ -213,20 +218,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1765824624324972446}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2437923884154517541
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2617406802179656258}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8347a46bd9cd08b49823c20f29f3efb1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rotationAxis: 1
-  rotationSpeed: 100
 --- !u!114 &9062894288792296604
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -239,6 +230,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88af59b8b895b6a4aa5a4df83cf21021, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.DynamicPlatform
+--- !u!114 &2576702862342787047
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2617406802179656258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b2bec9f8f4b18e42b9daebe2dd0daca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ithappy.rc.RotationScript
+  rotationAxis: 1
+  rotationSpeed: 50
 --- !u!4 &3393802287060898040 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4006036604805930854, guid: 23f8c0ffe3ff1e340aa225c155cea12b,

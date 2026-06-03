@@ -12289,6 +12289,7 @@ GameObject:
   - component: {fileID: 3051612453409750499}
   - component: {fileID: 3724928711530958438}
   - component: {fileID: 1719234321182023356}
+  - component: {fileID: 1562974929597752595}
   m_Layer: 0
   m_Name: BrunoPlayer
   m_TagString: Untagged
@@ -13005,6 +13006,19 @@ MonoBehaviour:
   _regenDelay: 3
   _regenAmount: 1
   _regenInterval: 1.5
+--- !u!114 &1562974929597752595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180447016402789145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04eca3df7d935aa4fad1c35665250e84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.NetworkPlayerInputLocker
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &4180823440820865628
 GameObject:
   m_ObjectHideFlags: 0

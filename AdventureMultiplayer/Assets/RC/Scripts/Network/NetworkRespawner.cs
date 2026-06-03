@@ -57,10 +57,28 @@ namespace AdventureMultiplayer
             Debug.Log($"[NetworkRespawner] Respawn point updated to {position}");
         }
 
+        /// <summary>Instantly respawns the local player at their last checkpoint. Called by the reset button.</summary>
+        public void RespawnNow()
+        {
+            if (m_player == null || !IsOwner) return;
+            ApplyRespawn();
+            Debug.Log($"[NetworkRespawner] Manual reset to {m_respawnPoint}");
+        }
+
         private void OnPlayerDied()
         {
-            if (!m_respawning)
-                RespawnAfterDelay().Forget();
+            if (m_respawning) return;
+            // Don't respawn if this player has already finished the race.
+            if (RaceManager.Instance != null)
+            {
+                var rm = RaceManager.Instance;
+                for (int i = 0; i < rm.RaceEntries.Count; i++)
+                {
+                    var e = rm.RaceEntries[i];
+                    if (e.ClientId == OwnerClientId && e.Finished) return;
+                }
+            }
+            RespawnAfterDelay().Forget();
         }
 
         private async UniTaskVoid RespawnAfterDelay()
@@ -71,14 +89,20 @@ namespace AdventureMultiplayer
             await UniTask.WaitForSeconds(respawnDelay,
                 cancellationToken: this.GetCancellationTokenOnDestroy());
 
-            if (m_player != null)
-            {
-                m_player.SetRespawn(m_respawnPoint, Quaternion.identity);
-                m_player.Respawn();
-                Debug.Log($"[NetworkRespawner] Respawned at {m_respawnPoint}");
-            }
-
+            ApplyRespawn();
             m_respawning = false;
+        }
+
+        // Spreads players around the checkpoint so they don't stack on top of each other.
+        // Each player gets a 90° arc slot based on their client ID.
+        private void ApplyRespawn()
+        {
+            if (m_player == null) return;
+            float angle  = (OwnerClientId % 4) * 90f * Mathf.Deg2Rad;
+            Vector3 spot = m_respawnPoint + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * 1.5f;
+            m_player.SetRespawn(spot, Quaternion.identity);
+            m_player.Respawn();
+            Debug.Log($"[NetworkRespawner] Respawned at {spot}");
         }
     }
 }

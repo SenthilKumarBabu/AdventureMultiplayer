@@ -8,18 +8,26 @@ using Unity.Netcode;
 namespace AdventureMultiplayer
 {
     /// <summary>
-    /// Displays the race results leaderboard and a Home button.
-    /// Starts inactive — FinishScreenActivator enables it when all players finish.
+    /// Displays the race results and a Home button.
+    /// Starts inactive — FinishScreenActivator enables it when the local player finishes.
     ///
-    /// Setup:
-    ///   - titleText    → "RACE RESULTS" header label
-    ///   - resultsText  → multi-line label listing all players by rank
-    ///   - homeButton   → Button that returns to lobby
+    /// While other players are still racing the Home button is locked and a live
+    /// countdown ("Waiting for others... 28s") is shown. Once AllPlayersFinished
+    /// fires (everyone finished or timed out) the button unlocks and results refresh.
+    ///
+    /// Setup (Inspector):
+    ///   titleText   → "RACE RESULTS" header
+    ///   timeText    → large label for the local player's finish time
+    ///   waitingText → small label shown while others are still racing
+    ///   resultsText → multi-line leaderboard
+    ///   homeButton  → returns to lobby (locked until all finish)
     /// </summary>
     [AddComponentMenu("Adventure Multiplayer/HUD/Finish Screen HUD")]
     public class FinishScreenHUD : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI titleText;
+        [SerializeField] private TextMeshProUGUI timeText;
+        [SerializeField] private TextMeshProUGUI waitingText;
         [SerializeField] private TextMeshProUGUI resultsText;
         [SerializeField] private Button          homeButton;
         [SerializeField] private float           slideInDuration = 0.5f;
@@ -28,29 +36,97 @@ namespace AdventureMultiplayer
         private static readonly string[] k_ordinals =
             { "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th" };
 
+        private static readonly string[] k_characterNames =
+            { "Gale", "Blaze", "Bolt", "Bruno", "Spike" };
+
+        private bool m_allFinished;
+
         private void OnEnable()
         {
-            if (titleText != null)
-                titleText.text = "RACE RESULTS";
+            if (titleText != null) titleText.text = "RACE RESULTS";
+
+            m_allFinished = RaceManager.Instance != null && RaceManager.Instance.AllPlayersFinished.Value;
+
+            // Ensure HUD is hidden and input is disabled even for DNF players who
+            // never entered spectator mode (SpectatorController guards against double-calls).
+            SpectatorController.Instance?.HideRacingHUD();
+            SpectatorController.Instance?.DisableLocalInput();
 
             BuildResults();
+            RefreshWaitingState();
             WireHomeButton();
             SlideIn();
+
+            if (RaceManager.Instance != null)
+                RaceManager.Instance.AllPlayersFinished.OnValueChanged += OnAllPlayersFinished;
+        }
+
+        private void OnDisable()
+        {
+            if (RaceManager.Instance != null)
+                RaceManager.Instance.AllPlayersFinished.OnValueChanged -= OnAllPlayersFinished;
+        }
+
+        private void Update()
+        {
+            if (m_allFinished || RaceManager.Instance == null) return;
+
+            double endTime = RaceManager.Instance.CountdownEndTime.Value;
+            if (endTime <= 0 || NetworkManager.Singleton == null) return;
+
+            double remaining = endTime - NetworkManager.Singleton.ServerTime.Time;
+            int secs = Mathf.Max(0, (int)remaining);
+
+            if (waitingText != null)
+                waitingText.text = $"Waiting for others...  {secs}s";
+        }
+
+        private void OnAllPlayersFinished(bool _, bool current)
+        {
+            if (!current) return;
+            m_allFinished = true;
+            BuildResults();
+            RefreshWaitingState();
+        }
+
+        // ── UI ────────────────────────────────────────────────────────────────
+
+        private void RefreshWaitingState()
+        {
+            if (homeButton  != null) homeButton.interactable         = m_allFinished;
+            if (waitingText != null) waitingText.gameObject.SetActive(!m_allFinished);
         }
 
         private void BuildResults()
         {
-            if (resultsText == null || RaceManager.Instance == null) return;
+            if (RaceManager.Instance == null) return;
 
-            var rm = RaceManager.Instance;
+            var rm      = RaceManager.Instance;
+            ulong localId = NetworkManager.Singleton != null
+                ? NetworkManager.Singleton.LocalClientId
+                : ulong.MaxValue;
+
+            // Local player's own time shown prominently.
+            if (timeText != null)
+            {
+                timeText.text = "";
+                for (int i = 0; i < rm.RaceEntries.Count; i++)
+                {
+                    var e = rm.RaceEntries[i];
+                    if (e.ClientId != localId) continue;
+                    timeText.text = e.Finished && e.FinishTimeSeconds > 0f
+                        ? $"YOUR TIME\n{FormatTime(e.FinishTimeSeconds)}"
+                        : "";
+                    break;
+                }
+            }
+
+            if (resultsText == null) return;
+
             var sorted = new System.Collections.Generic.List<RaceEntry>();
             for (int i = 0; i < rm.RaceEntries.Count; i++)
                 sorted.Add(rm.RaceEntries[i]);
             sorted.Sort((a, b) => a.RacePosition.CompareTo(b.RacePosition));
-
-            ulong localId = NetworkManager.Singleton != null
-                ? NetworkManager.Singleton.LocalClientId
-                : ulong.MaxValue;
 
             var sb = new System.Text.StringBuilder();
             foreach (var entry in sorted)
@@ -60,13 +136,24 @@ namespace AdventureMultiplayer
                     : $"{entry.RacePosition}th";
 
                 bool   isLocal = entry.ClientId == localId;
-                string status  = entry.Finished ? ordinal : "DNF";
-                string name    = isLocal ? "You" : $"Player {entry.ClientId}";
+                int    charIdx = CharacterPicker.Instance != null
+                    ? CharacterPicker.Instance.GetSelection(entry.ClientId) : 0;
+                string charName = charIdx >= 0 && charIdx < k_characterNames.Length
+                    ? k_characterNames[charIdx] : "Player";
+                string name    = isLocal ? $"You ({charName})" : charName;
+
+                string status;
+                if (!entry.Finished)
+                    status = "Racing";
+                else if (entry.FinishTimeSeconds > 0f)
+                    status = $"{ordinal}  {FormatTime(entry.FinishTimeSeconds)}";
+                else
+                    status = "DNF";
 
                 if (isLocal)
-                    sb.AppendLine($"<color=#FFD91A><b>{status}  {name}</b></color>");
+                    sb.AppendLine($"<color=#FFD91A><b>{name}  —  {status}</b></color>");
                 else
-                    sb.AppendLine($"{status}  {name}");
+                    sb.AppendLine($"{name}  —  {status}");
             }
 
             resultsText.text = sb.ToString().TrimEnd();
@@ -92,6 +179,13 @@ namespace AdventureMultiplayer
             if (rt == null) return;
             rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, -Screen.height);
             rt.DOAnchorPosY(0f, slideInDuration).SetEase(Ease.OutBack);
+        }
+
+        private static string FormatTime(float seconds)
+        {
+            int   m = (int)(seconds / 60);
+            float s = seconds % 60;
+            return $"{m}:{s:00.00}";
         }
     }
 }

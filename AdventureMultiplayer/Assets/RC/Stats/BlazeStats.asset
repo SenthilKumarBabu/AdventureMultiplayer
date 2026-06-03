@@ -44,8 +44,8 @@ MonoBehaviour:
   jumpOnNormalDirection: 0
   multiJumps: 1
   coyoteJumpThreshold: 0.15
-  maxJumpHeight: 13.5
-  minJumpHeight: 7.5
+  maxJumpHeight: 18.75
+  minJumpHeight: 10.5
   canPickUp: 0
   canPickUpOnAir: 0
   canJumpWhileHolding: 1

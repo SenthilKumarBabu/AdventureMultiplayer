@@ -20,6 +20,10 @@ namespace AdventureMultiplayer
         private static readonly string[] CharacterNames   = { "Gale", "Blaze", "Bolt", "Bruno", "Spike" };
         private static readonly string[] CharacterAbility = { "Glider", "Dash", "Sprinter", "Roller", "Air Dive" };
 
+        public event System.Action<int> CharacterChanged;
+
+        public int SelectedIndex => m_SelectedIndex;
+
         private int m_SelectedIndex;
 
         private void Awake()
@@ -36,6 +40,7 @@ namespace AdventureMultiplayer
         {
             m_SelectedIndex = index;
             Highlight(index);
+            CharacterChanged?.Invoke(index);
 
             if (CharacterPicker.Instance != null)
                 CharacterPicker.Instance.SelectCharacter(index);

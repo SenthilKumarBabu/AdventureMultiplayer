@@ -78,8 +78,9 @@ namespace AdventureMultiplayer
 
         private void Update()
         {
-            // Hold abilities drain per second
-            bool draining = (_characterIndex == 0 && _input.GetGlide())
+            // Hold abilities drain per second.
+            // Glide: only drain while actually in GlidingPlayerState (not on floor button press).
+            bool draining = (_characterIndex == 0 && _player.states.current is GlidingPlayerState)
                          || (_characterIndex == 2 && _input.GetRun());
 
             if (draining && CurrentMana > 0f)

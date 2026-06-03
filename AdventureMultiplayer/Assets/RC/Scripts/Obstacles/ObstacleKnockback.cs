@@ -70,11 +70,30 @@ namespace AdventureMultiplayer
 
             _lastKnockbackTime = Time.time;
 
-            var rawDir = player.position - transform.position;
-            var dir    = new Vector3(rawDir.x, 0f, rawDir.z);
-            bool usedFallback = dir.sqrMagnitude < 0.001f;
-            if (usedFallback) dir = Vector3.forward;
-            dir = dir.normalized;
+            // For spinning/moving obstacles, use the obstacle's surface velocity at the
+            // player's position — this gives the true direction of the hit (e.g. tangential
+            // for a rotating arm, rather than radially away from the pivot).
+            // Fall back to pivot→player direction for static obstacles with no Rigidbody.
+            var rb = GetComponentInParent<Rigidbody>();
+            Vector3 dir;
+            bool usedFallback;
+            if (rb != null)
+            {
+                var surfaceVel = rb.GetPointVelocity(player.position);
+                var flatVel    = new Vector3(surfaceVel.x, 0f, surfaceVel.z);
+                usedFallback   = flatVel.sqrMagnitude < 0.01f;
+                dir = usedFallback
+                    ? new Vector3(player.position.x - transform.position.x, 0f, player.position.z - transform.position.z).normalized
+                    : flatVel.normalized;
+            }
+            else
+            {
+                var rawDir = player.position - transform.position;
+                dir        = new Vector3(rawDir.x, 0f, rawDir.z);
+                usedFallback = dir.sqrMagnitude < 0.001f;
+                if (usedFallback) dir = Vector3.forward;
+                dir = dir.normalized;
+            }
 
             Debug.Log($"[ObstacleKnockback] {name} ({source}): dir={dir:F2} fallback={usedFallback} | state={player.states.current.GetType().Name} | HP={player.health.current}/{player.health.max}");
 

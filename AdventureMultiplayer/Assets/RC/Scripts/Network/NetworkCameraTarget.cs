@@ -34,6 +34,20 @@ namespace AdventureMultiplayer
 
             cam.SetTarget(player.transform);
             Debug.Log($"[NetworkCameraTarget] Camera assigned to '{player.name}' (clientId={OwnerClientId})");
+
+            // PlayerInputManager.Start() calls Camera.main which can be null if the player
+            // spawns before the scene camera initialises on the client. Inject it directly.
+            var inputManager = GetComponent<PlayerInputManager>();
+            if (inputManager != null)
+            {
+                var field = typeof(PlayerInputManager).GetField("m_camera",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (field != null && field.GetValue(inputManager) == null)
+                {
+                    field.SetValue(inputManager, cam.GetComponent<Camera>());
+                    Debug.Log($"[NetworkCameraTarget] Injected m_camera into PlayerInputManager for '{player.name}'");
+                }
+            }
         }
     }
 }

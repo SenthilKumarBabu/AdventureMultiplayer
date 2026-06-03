@@ -22,23 +22,59 @@ namespace AdventureMultiplayer
         [SerializeField] public int  index;
         [SerializeField] public bool isFinishLine;
 
+        // Tracks owners already processed this crossing so multiple colliders on the
+        // same player (Body, Stomp Hitbox, root) don't send duplicate RPCs.
+        private readonly System.Collections.Generic.HashSet<ulong> m_passedOwners = new();
+
         private void OnTriggerEnter(Collider other)
         {
-            // Collision detection is server-authoritative.
-            if (RaceManager.Instance == null || !RaceManager.Instance.IsServer) return;
+            Debug.Log($"[Checkpoint {index}] OnTriggerEnter: '{other.gameObject.name}' tag={other.tag}");
+
+            if (RaceManager.Instance == null)
+            {
+                Debug.LogWarning($"[Checkpoint {index}] RaceManager.Instance is null — skipped.");
+                return;
+            }
 
             var netObj = other.GetComponentInParent<NetworkObject>();
-            if (netObj == null) return;
+            if (netObj == null)
+            {
+                Debug.Log($"[Checkpoint {index}] No NetworkObject in parent of '{other.gameObject.name}' — skipped.");
+                return;
+            }
 
-            // Ignore non-player objects (enemies, collectibles, etc.).
-            if (other.GetComponentInParent<Player>() == null) return;
+            if (!netObj.IsOwner)
+            {
+                Debug.Log($"[Checkpoint {index}] Not owner (OwnerClientId={netObj.OwnerClientId}) — skipped.");
+                return;
+            }
 
-            ulong clientId = netObj.OwnerClientId;
+            if (other.GetComponentInParent<Player>() == null)
+            {
+                Debug.Log($"[Checkpoint {index}] No Player component in parent — skipped.");
+                return;
+            }
 
-            if (isFinishLine)
-                RaceManager.Instance.PlayerFinished(clientId);
+            // Deduplicate: each owner is processed only once per checkpoint.
+            if (!m_passedOwners.Add(netObj.OwnerClientId))
+            {
+                Debug.Log($"[Checkpoint {index}] Owner {netObj.OwnerClientId} already processed — skipped.");
+                return;
+            }
+
+            Debug.Log($"[Checkpoint {index}] Owner {netObj.OwnerClientId} crossed  isFinishLine={isFinishLine} — sending RPC.");
+            RaceManager.Instance.ReportCheckpointServerRpc(index, isFinishLine);
+
+            // Update the owner's respawn point to this checkpoint position.
+            var respawner = other.GetComponentInParent<NetworkRespawner>();
+            if (respawner != null)
+                respawner.SetRespawnPoint(transform.position);
             else
-                RaceManager.Instance.RegisterCheckpoint(clientId, index);
+                Debug.LogWarning($"[Checkpoint {index}] No NetworkRespawner found on player — respawn point not updated.");
+
+            // Show local HUD immediately — don't wait for the server round-trip.
+            if (!isFinishLine)
+                CheckpointHUD.Instance?.Show($"Checkpoint {index}!");
         }
     }
 }

@@ -117,16 +117,7 @@ Shader "ithappy/WaterURP"
                 return pow((1.0 - saturate(dot(normalize(normal), normalize(viewDir)))), power);
             }
 
-            // Packing
-            half3 UnpackNormalAG(half4 packedNormal, half scale)
-            {
-                half3 normal;
-                normal.xy = packedNormal.ag * 2.0 - 1.0;
-                normal.z = max(1.0e-16, sqrt(1.0 - saturate(dot(normal.xy, normal.xy))));
-
-                normal.xy *= scale;
-                return normal;
-            }
+            // UnpackNormalAG is already defined in Unity 6 URP — removed to avoid redefinition error
 
             half3 UnpackNormalmapRGorAG(half4 packedNormal, half scale)
             {

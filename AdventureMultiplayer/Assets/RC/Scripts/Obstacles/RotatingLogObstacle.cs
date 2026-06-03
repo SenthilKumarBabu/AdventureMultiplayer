@@ -27,8 +27,9 @@ namespace AdventureMultiplayer
 
         private void Update()
         {
-            var top = _myCollider.bounds.center + Vector3.up * (_myCollider.bounds.extents.y + 0.1f);
-            var hits = Physics.OverlapSphere(top, detectionRadius, ~0, QueryTriggerInteraction.Ignore);
+            var center = _myCollider.bounds.center;
+            float searchRadius = detectionRadius + _myCollider.bounds.extents.y + 1.5f;
+            var hits = Physics.OverlapSphere(center, searchRadius, ~0, QueryTriggerInteraction.Ignore);
 
             foreach (var col in hits)
             {
@@ -36,7 +37,11 @@ namespace AdventureMultiplayer
                 if (player == null) continue;
                 if (!player.isAlive) continue;
                 if (!player.isGrounded) continue;
-                if (player.groundHit.collider != _myCollider) continue;
+
+                var groundCol = player.groundHit.collider;
+                bool onThisLog = groundCol != null &&
+                    (groundCol == _myCollider || groundCol.transform.IsChildOf(transform));
+                if (!onThisLog) continue;
 
                 ApplyRotationPush(player);
                 break;
@@ -45,7 +50,6 @@ namespace AdventureMultiplayer
 
         private void ApplyRotationPush(Player player)
         {
-            // Build angular velocity vector in world space (deg/s → rad/s)
             var localAxis = _rotationScript.rotationAxis switch
             {
                 RotationScript.RotationAxis.X => Vector3.right,
@@ -55,15 +59,11 @@ namespace AdventureMultiplayer
 
             var worldAxis  = transform.TransformDirection(localAxis);
             var omega      = worldAxis * (_rotationScript.rotationSpeed * Mathf.Deg2Rad);
+            var r          = player.position - transform.position;
+            var tangential = Vector3.Cross(omega, r) * pushMultiplier;
 
-            // Tangential velocity at the player's position: v = ω × r
-            var r               = player.position - transform.position;
-            var tangentialVelocity = Vector3.Cross(omega, r) * pushMultiplier;
-
-            // Apply as lateral velocity and kick into fall state
-            player.lateralVelocity  = new Vector3(tangentialVelocity.x, 0f, tangentialVelocity.z);
-            player.verticalVelocity = Vector3.down * 2f;
-            player.states.Change<FallPlayerState>();
+            // Add rotation push on top of player's own input — don't wipe input direction.
+            player.lateralVelocity += new Vector3(tangential.x, 0f, tangential.z);
         }
     }
 }

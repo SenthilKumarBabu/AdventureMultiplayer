@@ -12,26 +12,35 @@ EditorBuildSettings:
     path: Assets/RC/Scenes/DeathRunL1.unity
     guid: 5a0a226cbbdc41d468034d9c957f8474
   - enabled: 1
+    path: Assets/RC/Scenes/DeathRunL2.unity
+    guid: 274f77f35f9201840bbf1001613ebd51
+  - enabled: 1
+    path: Assets/RC/Scenes/DeathRunL3.unity
+    guid: 67bd8eb9e10b46a2bae0e11c596c01b7
+  - enabled: 0
     path: Assets/RC/Scenes/AdventureLevel.unity
     guid: ba21dc43ba21dc43ba21dc43ba21dc43
-  - enabled: 1
+  - enabled: 0
     path: Assets/ThirdParty/PLAYER TWO/Platformer Project/Examples/Scenes/MainMenu.unity
     guid: 1cf5eb096d96e6c45b07b597b5bdde05
-  - enabled: 1
+  - enabled: 0
     path: Assets/ThirdParty/PLAYER TWO/Platformer Project/Examples/Scenes/TestLevelScene.unity
     guid: 278a551158294f341b62da4310b65882
-  - enabled: 1
+  - enabled: 0
     path: Assets/ThirdParty/PLAYER TWO/Platformer Project/Examples/Scenes/TestLevelScene
       2.unity
     guid: c7fa87c38f465d249b0f3b291e5de4d4
-  - enabled: 1
+  - enabled: 0
     path: Assets/ThirdParty/PLAYER TWO/Platformer Project/Examples/Scenes/TestLevelScene
       3.unity
     guid: 8099554f2adc5444980cbd68eb648122
-  - enabled: 1
+  - enabled: 0
     path: Assets/ThirdParty/PLAYER TWO/Platformer Project/Examples/Scenes/TestLevelScene
       4.unity
     guid: e5a61e885ef440d4bb5bfd46a7026158
+  - enabled: 1
+    path: Assets/RC/Scenes/ObstacleL1.unity
+    guid: f19fe0ed276803141bf18b8bbd28445f
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f,
       type: 2}

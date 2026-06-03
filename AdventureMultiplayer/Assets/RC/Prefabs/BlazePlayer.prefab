@@ -16597,6 +16597,7 @@ GameObject:
   - component: {fileID: 2955545572186137765}
   - component: {fileID: 500931345341182568}
   - component: {fileID: 8555396449097592972}
+  - component: {fileID: 7022027465253353929}
   m_Layer: 0
   m_Name: BlazePlayer
   m_TagString: Untagged
@@ -17300,6 +17301,19 @@ MonoBehaviour:
   _regenDelay: 3
   _regenAmount: 1
   _regenInterval: 1.5
+--- !u!114 &7022027465253353929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180447016402789145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04eca3df7d935aa4fad1c35665250e84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.NetworkPlayerInputLocker
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &4326861519637374406
 GameObject:
   m_ObjectHideFlags: 0

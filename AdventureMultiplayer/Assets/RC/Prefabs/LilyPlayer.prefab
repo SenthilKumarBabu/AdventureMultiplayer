@@ -11207,6 +11207,7 @@ GameObject:
   - component: {fileID: 6474422388422972591}
   - component: {fileID: 3943259247708538202}
   - component: {fileID: 6391354038116522381}
+  - component: {fileID: 9076504967209590536}
   m_Layer: 0
   m_Name: LilyPlayer
   m_TagString: Untagged
@@ -11908,6 +11909,19 @@ MonoBehaviour:
   _regenDelay: 3
   _regenAmount: 1
   _regenInterval: 1.5
+--- !u!114 &9076504967209590536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180447016402789145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04eca3df7d935aa4fad1c35665250e84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.NetworkPlayerInputLocker
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &4211856812238732251
 GameObject:
   m_ObjectHideFlags: 0

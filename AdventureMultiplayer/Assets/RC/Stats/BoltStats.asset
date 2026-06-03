@@ -21,11 +21,11 @@ MonoBehaviour:
   gravityTopSpeed: 62
   applyInputMagnitude: 1
   decelerateWhenOverTopSpeed: 1
-  acceleration: 18
+  acceleration: 15
   decelerationToTopSpeed: 10
   friction: 28
   minTopSpeed: 2
-  topSpeed: 9
+  topSpeed: 7
   turningDrag: 42
   airAcceleration: 32
   airTurningDrag: 90
@@ -37,15 +37,15 @@ MonoBehaviour:
   slopeDownwardForce: 28
   canRun: 1
   canRunOnAir: 1
-  runningAcceleration: 22
-  runningTopSpeed: 12
+  runningAcceleration: 18
+  runningTopSpeed: 9
   runningTurningDrag: 14
   canJump: 1
   jumpOnNormalDirection: 0
   multiJumps: 1
   coyoteJumpThreshold: 0.15
-  maxJumpHeight: 9.75
-  minJumpHeight: 6
+  maxJumpHeight: 13.5
+  minJumpHeight: 8.25
   canPickUp: 0
   canPickUpOnAir: 0
   canJumpWhileHolding: 1
