@@ -1,0 +1,130 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fa2be82414706d4f97351fbca663ec9, type: 3}
+  m_Name: ObstacleKnockbackDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.ObstacleKnockbackDatabase
+  configs:
+  - type: 0
+    lateralForce: 15
+    upwardForce: 8
+    damage: 0
+    pureKnockback: 1
+    knockbackCooldown: 1
+  - type: 1
+    lateralForce: 18
+    upwardForce: 10
+    damage: 0
+    pureKnockback: 1
+    knockbackCooldown: 0.8
+  - type: 2
+    lateralForce: 22
+    upwardForce: 10
+    damage: 0
+    pureKnockback: 1
+    knockbackCooldown: 0.5
+  - type: 3
+    lateralForce: 30
+    upwardForce: 18
+    damage: 1
+    pureKnockback: 0
+    knockbackCooldown: 1.5
+  - type: 4
+    lateralForce: 25
+    upwardForce: 15
+    damage: 1
+    pureKnockback: 0
+    knockbackCooldown: 1
+  - type: 5
+    lateralForce: 20
+    upwardForce: 12
+    damage: 1
+    pureKnockback: 0
+    knockbackCooldown: 0.8
+  - type: 6
+    lateralForce: 25
+    upwardForce: 3
+    damage: 0
+    pureKnockback: 1
+    knockbackCooldown: 0.8
+  - type: 7
+    lateralForce: 18
+    upwardForce: 10
+    damage: 0
+    pureKnockback: 1
+    knockbackCooldown: 0.8
+  - type: 8
+    lateralForce: 35
+    upwardForce: 20
+    damage: 1
+    pureKnockback: 0
+    knockbackCooldown: 2
+  - type: 9
+    lateralForce: 28
+    upwardForce: 16
+    damage: 1
+    pureKnockback: 0
+    knockbackCooldown: 1.2
+  - type: 10
+    lateralForce: 22
+    upwardForce: 12
+    damage: 0
+    pureKnockback: 1
+    knockbackCooldown: 0.8
+  - type: 11
+    lateralForce: 20
+    upwardForce: 5
+    damage: 0
+    pureKnockback: 1
+    knockbackCooldown: 0.8
+  - type: 12
+    lateralForce: 28
+    upwardForce: 8
+    damage: 0
+    pureKnockback: 1
+    knockbackCooldown: 1.5
+  - type: 13
+    lateralForce: 18
+    upwardForce: 8
+    damage: 0
+    pureKnockback: 1
+    knockbackCooldown: 0.5
+  - type: 14
+    lateralForce: 15
+    upwardForce: 8
+    damage: 1
+    pureKnockback: 0
+    knockbackCooldown: 0.5
+  - type: 15
+    lateralForce: 30
+    upwardForce: 3
+    damage: 0
+    pureKnockback: 1
+    knockbackCooldown: 1
+  meshMappings:
+  - meshName: obstacle_4_002
+    type: 10
+  - meshName: obstacle_6_001
+    type: 6
+  - meshName: obstacle_12_001
+    type: 11
+  - meshName: obstacle_001
+    type: 4
+  - meshName: stone_006
+    type: 12
+  - meshName: obstacle_2_001
+    type: 5
+  - meshName: obstacle_2_002
+    type: 5
+  - meshName: obstacle_5_001
+    type: 8
+  - meshName: obstacle_3_002
+    type: 9
