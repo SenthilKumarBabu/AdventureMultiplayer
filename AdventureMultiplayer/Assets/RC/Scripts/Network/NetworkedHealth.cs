@@ -28,6 +28,10 @@ namespace AdventureMultiplayer
 
         private Health m_health;
         private bool   m_shieldActive;
+        private bool   m_invincibleActive;
+
+        public bool IsShielded   => m_shieldActive;
+        public bool IsInvincible => m_invincibleActive;
 
         public override void OnNetworkSpawn()
         {
@@ -59,6 +63,12 @@ namespace AdventureMultiplayer
         [ServerRpc(RequireOwnership = false)]
         public void TakeDamageServerRpc(int damage, Vector3 origin)
         {
+            if (m_invincibleActive)
+            {
+                Debug.Log($"[NetworkedHealth] Invincibility blocked hit for client {OwnerClientId}.");
+                return;
+            }
+
             if (m_shieldActive)
             {
                 m_shieldActive = false;
@@ -76,8 +86,11 @@ namespace AdventureMultiplayer
             ApplyDamageClientRpc(damage, origin);
         }
 
-        /// <summary>Activate shield (called by NetworkedPowerUp).</summary>
+        /// <summary>Activate shield — absorbs the next hit then self-clears.</summary>
         public void SetShield(bool active) => m_shieldActive = active;
+
+        /// <summary>Activate full invincibility — blocks all incoming damage for a timed duration managed by the caller.</summary>
+        public void SetInvincible(bool active) => m_invincibleActive = active;
 
         // ── ClientRpcs ────────────────────────────────────────────────────────
 

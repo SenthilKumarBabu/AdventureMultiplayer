@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1001 &2457999041445846206
 PrefabInstance:
@@ -81,7 +81,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1526307112702175188, guid: 2e5c411ef77031944b4d8ff6845e1f63,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5609319755201498800}
+      addedObject: {fileID: 8485480113572790983}
   m_SourcePrefab: {fileID: 100100000, guid: 2e5c411ef77031944b4d8ff6845e1f63, type: 3}
 --- !u!1 &3977269053086677866 stripped
 GameObject:
@@ -89,7 +89,7 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 2457999041445846206}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5609319755201498800
+--- !u!114 &8485480113572790983
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -98,14 +98,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 3977269053086677866}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fecb6793ed321ca48850a0713cf2a0e1, type: 3}
+  m_Script: {fileID: 11500000, guid: 2b2b442d7ee346a5b930f96a3ba3a2c2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  moveAxis: {x: 0, y: 0, z: 1}
-  moveDistance: -2
-  duration: 4
-  useRandomDelay: 1
-  maxRandomDelay: 1
+  m_EditorClassIdentifier: Assembly-CSharp::ithappy.RotationScript
+  rotationAxis: 1
+  rotationSpeed: 80
 --- !u!4 &4357735722016498128 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2190254203315928430, guid: 2e5c411ef77031944b4d8ff6845e1f63,

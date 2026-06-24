@@ -16598,6 +16598,9 @@ GameObject:
   - component: {fileID: 500931345341182568}
   - component: {fileID: 8555396449097592972}
   - component: {fileID: 7022027465253353929}
+  - component: {fileID: 5352649699807822493}
+  - component: {fileID: 2476906853556066306}
+  - component: {fileID: 8234134589946515575}
   m_Layer: 0
   m_Name: BlazePlayer
   m_TagString: Untagged
@@ -17314,6 +17317,47 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.NetworkPlayerInputLocker
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &5352649699807822493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180447016402789145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 148a04dffac1f6343bf5907efbd62d73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.StunEffect
+--- !u!114 &2476906853556066306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180447016402789145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac001b251903e9f43b2c8bac58a9df56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SlipEffect
+--- !u!114 &8234134589946515575
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180447016402789145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc614990b44091c4ab34530dd4ed131b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.PlayerPowerUpInventory
+  ShowTopMostFoldoutHeaderGroup: 1
+  bananaPeelPrefab: {fileID: 7963358822108837248, guid: 0f0da63090b0c9b4eb426d9c196e3560,
+    type: 3}
+  decoyBoxPrefab: {fileID: 8524915466210177107, guid: ae5053b86d861fe4a874bd10b72e078d,
+    type: 3}
 --- !u!1 &4326861519637374406
 GameObject:
   m_ObjectHideFlags: 0

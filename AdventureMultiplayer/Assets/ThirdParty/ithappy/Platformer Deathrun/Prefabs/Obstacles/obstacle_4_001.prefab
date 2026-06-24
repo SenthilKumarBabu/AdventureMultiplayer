@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1001 &2533618419936166908
 PrefabInstance:
@@ -201,11 +201,11 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5126797731625207511, guid: ed369905fd197574ea21d8f50a4ff06f,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1899410636558826238}
+      addedObject: {fileID: 2747388915503451095}
     - targetCorrespondingSourceObject: {fileID: 5126797731625207511, guid: ed369905fd197574ea21d8f50a4ff06f,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2747388915503451095}
+      addedObject: {fileID: 2987939125153512580}
   m_SourcePrefab: {fileID: 100100000, guid: ed369905fd197574ea21d8f50a4ff06f, type: 3}
 --- !u!4 &8101256698675011608 stripped
 Transform:
@@ -219,23 +219,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 4323642527723551861}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1899410636558826238
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8873958954266753698}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 81bfbad52f6da2c4787254c810e4599c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rotationAxis: {x: 1, y: 0, z: 0}
-  rotationAngle: 100
-  duration: 2
-  useRandomDelay: 1
-  maxRandomDelay: 1
 --- !u!114 &2747388915503451095
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -248,8 +231,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c373e2ece65eb1c41a310f6891bdc281, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.ObstacleKnockback
-  lateralForce: 35
-  upwardForce: 12
-  damage: 0
-  pureKnockback: 1
-  knockbackCooldown: 1.5
+  obstacleType: 0
+  database: {fileID: 0}
+  overrideDirection: 0
+  customDirection: {x: 1, y: 0, z: 0}
+--- !u!114 &2987939125153512580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8873958954266753698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6686553ec2974afd88de236a78fed5ac, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ithappy.OscillateRotation
+  rotationAxis: {x: 1, y: 0, z: 0}
+  rotationAngle: 100
+  duration: 2
+  useRandomDelay: 1
+  maxRandomDelay: 0.5

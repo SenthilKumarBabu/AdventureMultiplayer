@@ -79,7 +79,8 @@ namespace AdventureMultiplayer
             }
 
             var spawnPos = GetSpawnPoint(spawnIndex);
-            var player   = Object.Instantiate(prefab, spawnPos, Quaternion.Euler(0f, 90f, 0f));
+            var spawnRot = GetSpawnRotation(spawnIndex);
+            var player   = Object.Instantiate(prefab, spawnPos, spawnRot);
             var netObj   = player.GetComponent<NetworkObject>();
 
             if (netObj == null)
@@ -97,6 +98,12 @@ namespace AdventureMultiplayer
         {
             if (spawnPoints == null || spawnPoints.Length == 0) return Vector3.zero;
             return spawnPoints[index % spawnPoints.Length].position;
+        }
+
+        private Quaternion GetSpawnRotation(int index)
+        {
+            if (spawnPoints == null || spawnPoints.Length == 0) return Quaternion.identity;
+            return spawnPoints[index % spawnPoints.Length].rotation;
         }
     }
 }

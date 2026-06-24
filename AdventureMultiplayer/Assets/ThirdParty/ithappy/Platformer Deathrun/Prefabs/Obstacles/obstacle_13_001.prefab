@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1001 &4763904612560032103
 PrefabInstance:
@@ -85,7 +85,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3698478384333917893, guid: 7081d0ee60d395a4187ebab3d211e67d,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6644592070035074068}
+      addedObject: {fileID: 1536895716038768535}
   m_SourcePrefab: {fileID: 100100000, guid: 7081d0ee60d395a4187ebab3d211e67d, type: 3}
 --- !u!1 &8164859548357844898 stripped
 GameObject:
@@ -93,7 +93,7 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 4763904612560032103}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6644592070035074068
+--- !u!114 &1536895716038768535
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -102,9 +102,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 8164859548357844898}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8347a46bd9cd08b49823c20f29f3efb1, type: 3}
+  m_Script: {fileID: 11500000, guid: 2b2b442d7ee346a5b930f96a3ba3a2c2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::ithappy.RotationScript
   rotationAxis: 1
   rotationSpeed: 100
 --- !u!4 &8792355590629426456 stripped

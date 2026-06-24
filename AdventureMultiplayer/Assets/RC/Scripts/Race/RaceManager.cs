@@ -316,5 +316,52 @@ namespace AdventureMultiplayer
                     return RaceEntries[i].RacePosition;
             return 0;
         }
+
+        // ── Power-up targeting helpers (server-only) ──────────────────────────
+
+        /// <summary>Race position (1-based) of a client. Returns int.MaxValue if not found.</summary>
+        public int GetRacePosition(ulong clientId)
+        {
+            for (int i = 0; i < RaceEntries.Count; i++)
+                if (RaceEntries[i].ClientId == clientId)
+                    return RaceEntries[i].RacePosition;
+            return int.MaxValue;
+        }
+
+        /// <summary>Client directly ahead (position - 1). Returns ulong.MaxValue if caster is already 1st.</summary>
+        public ulong GetPlayerAhead(ulong casterId)
+        {
+            int myPos = GetRacePosition(casterId);
+            if (myPos <= 1) return ulong.MaxValue;
+            return GetClientAtPosition(myPos - 1);
+        }
+
+        /// <summary>Client N positions ahead of caster. Clamps to 1st place.</summary>
+        public ulong GetPlayerNAhead(ulong casterId, int n)
+        {
+            int myPos    = GetRacePosition(casterId);
+            int target   = Mathf.Max(1, myPos - n);
+            if (target == myPos) return ulong.MaxValue;
+            return GetClientAtPosition(target);
+        }
+
+        /// <summary>All clients with a higher position number (further behind) than the caster.</summary>
+        public List<ulong> GetPlayersBehind(ulong casterId)
+        {
+            int myPos  = GetRacePosition(casterId);
+            var result = new List<ulong>();
+            for (int i = 0; i < RaceEntries.Count; i++)
+                if (RaceEntries[i].RacePosition > myPos && !RaceEntries[i].Finished)
+                    result.Add(RaceEntries[i].ClientId);
+            return result;
+        }
+
+        private ulong GetClientAtPosition(int position)
+        {
+            for (int i = 0; i < RaceEntries.Count; i++)
+                if (RaceEntries[i].RacePosition == position)
+                    return RaceEntries[i].ClientId;
+            return ulong.MaxValue;
+        }
     }
 }

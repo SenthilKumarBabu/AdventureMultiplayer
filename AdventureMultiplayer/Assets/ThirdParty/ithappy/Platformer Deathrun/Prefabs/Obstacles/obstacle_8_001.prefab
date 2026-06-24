@@ -196,7 +196,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1620132780644326757, guid: 6e08317de97e7d5408a39e2181c66681,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6485028961339798477}
+      addedObject: {fileID: 8909324141589746552}
   m_SourcePrefab: {fileID: 100100000, guid: 6e08317de97e7d5408a39e2181c66681, type: 3}
 --- !u!1 &7116221011522577323 stripped
 GameObject:
@@ -204,7 +204,7 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 8411100539210448590}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6485028961339798477
+--- !u!114 &8909324141589746552
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -213,11 +213,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 7116221011522577323}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 81bfbad52f6da2c4787254c810e4599c, type: 3}
+  m_Script: {fileID: 11500000, guid: 6686553ec2974afd88de236a78fed5ac, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::ithappy.OscillateRotation
   rotationAxis: {x: 1, y: 0, z: 0}
-  rotationAngle: 60
+  rotationAngle: -60
   duration: 2
   useRandomDelay: 1
   maxRandomDelay: 1

@@ -84,10 +84,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 38d9375ade22d0e4b9d6b82c0c16646d,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3492293461574382511}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 38d9375ade22d0e4b9d6b82c0c16646d,
-        type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1681139155932657062}
   m_SourcePrefab: {fileID: 100100000, guid: 38d9375ade22d0e4b9d6b82c0c16646d, type: 3}
 --- !u!1 &3535871363645322927 stripped
@@ -96,23 +92,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 4454228895046241278}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &3492293461574382511
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3535871363645322927}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 81bfbad52f6da2c4787254c810e4599c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rotationAxis: {x: 1, y: 0, z: 0}
-  rotationAngle: 100
-  duration: 2
-  useRandomDelay: 1
-  maxRandomDelay: 1
 --- !u!64 &1681139155932657062
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -222,10 +201,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6441501224483093872, guid: e87f04c0ae656e5469897bf4ccbd1e88,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4435483515019734583}
-    - targetCorrespondingSourceObject: {fileID: 6441501224483093872, guid: e87f04c0ae656e5469897bf4ccbd1e88,
-        type: 3}
-      insertIndex: -1
       addedObject: {fileID: 8122918330399884220}
   m_SourcePrefab: {fileID: 100100000, guid: e87f04c0ae656e5469897bf4ccbd1e88, type: 3}
 --- !u!4 &2673283938575341915 stripped
@@ -240,20 +215,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 8590183101990502033}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4435483515019734583
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3337933926356878305}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8347a46bd9cd08b49823c20f29f3efb1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rotationAxis: 0
-  rotationSpeed: 500
 --- !u!64 &8122918330399884220
 MeshCollider:
   m_ObjectHideFlags: 0

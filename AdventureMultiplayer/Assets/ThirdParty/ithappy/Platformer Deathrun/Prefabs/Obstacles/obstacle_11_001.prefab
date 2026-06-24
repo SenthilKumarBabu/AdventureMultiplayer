@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1001 &2865273214120153375
 PrefabInstance:
@@ -191,11 +191,11 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7272019836330756401, guid: 64c51950b4ff74d49b8c706c375be90c,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6709551218610176866}
+      addedObject: {fileID: 7044800211528206815}
     - targetCorrespondingSourceObject: {fileID: 7272019836330756401, guid: 64c51950b4ff74d49b8c706c375be90c,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7044800211528206815}
+      addedObject: {fileID: 2017473862329113840}
   m_SourcePrefab: {fileID: 100100000, guid: 64c51950b4ff74d49b8c706c375be90c, type: 3}
 --- !u!1 &2851604629545064463 stripped
 GameObject:
@@ -203,23 +203,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 4862067693214388542}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6709551218610176866
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2851604629545064463}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 81bfbad52f6da2c4787254c810e4599c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rotationAxis: {x: 0, y: 0, z: 1}
-  rotationAngle: -40
-  duration: 3
-  useRandomDelay: 1
-  maxRandomDelay: 1
 --- !u!64 &7044800211528206815
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -242,6 +225,23 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 845897280477713161, guid: dbf23377e38a44a4ba0bfe00b0c4a12a, type: 3}
+--- !u!114 &2017473862329113840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2851604629545064463}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6686553ec2974afd88de236a78fed5ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ithappy.OscillateRotation
+  rotationAxis: {x: 0, y: 0, z: 1}
+  rotationAngle: 45
+  duration: 1.5
+  useRandomDelay: 1
+  maxRandomDelay: 0.5
 --- !u!4 &3231684446660117173 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8043630349972312971, guid: 64c51950b4ff74d49b8c706c375be90c,
