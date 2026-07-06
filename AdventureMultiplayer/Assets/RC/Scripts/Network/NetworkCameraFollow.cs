@@ -4,53 +4,46 @@ namespace AdventureMultiplayer
 {
     /// <summary>
     /// Fixed third-person follow camera.
-    /// Maintains a fixed world-space offset from the player — does not rotate
-    /// with the player or respond to mouse input.
+    /// Sits directly behind the player (-Z world) at a set height and distance.
+    /// Y rotation is always 0 — the camera never rotates, only translates.
     /// </summary>
     [AddComponentMenu("Adventure Multiplayer/Network Camera Follow")]
     public class NetworkCameraFollow : MonoBehaviour
     {
-        [Header("Offset")]
-        [SerializeField] private Vector3 offset = new Vector3(-10f, 8f, 0f);
+        [Header("Camera Position")]
+        [Tooltip("How many units above the player the camera sits.")]
+        [SerializeField] private float height   = 10f;
+        [Tooltip("How many units behind the player (-Z world) the camera sits.")]
+        [SerializeField] private float distance = 15f;
 
         [Header("Smoothing")]
-        [SerializeField] private float positionSmooth = 10f;
-        [SerializeField] private float lookAtSmooth   = 8f;
+        [SerializeField] private float positionSmooth = 8f;
 
         private Transform m_target;
         private Vector3   m_velocity;
-        private Vector3   m_smoothedLookAt;
-        private Vector3   m_lookAtVelocity;
         private Camera    m_camera;
 
         private void Awake()
         {
             m_camera = GetComponent<Camera>();
-            // Hide the camera until the local player spawns and SetTarget is called.
-            // Prevents the camera from sitting at its scene-placed position (0,0,0)
-            // while the network is initialising.
             if (m_camera != null) m_camera.enabled = false;
         }
 
-        /// <summary>
-        /// Called by NetworkCameraTarget when the local player spawns.
-        /// </summary>
+        /// <summary>Called by NetworkCameraTarget when the local player spawns.</summary>
         public void SetTarget(Transform target)
         {
-            m_target         = target;
-            m_smoothedLookAt = target.position;
-            m_lookAtVelocity = Vector3.zero;
-            m_velocity       = Vector3.zero;
+            m_target   = target;
+            m_velocity = Vector3.zero;
 
-            // Snap camera to correct position immediately on spawn, then enable.
-            transform.position = target.position + offset;
-            transform.LookAt(target.position);
+            // Snap immediately to the correct position and rotation.
+            transform.position = DesiredPos();
+            transform.rotation = DesiredRot();
             if (m_camera != null) m_camera.enabled = true;
 
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible   = true;
 
-            Debug.Log($"[NetworkCameraFollow] Following '{target.name}'");
+            Debug.Log($"[NetworkCameraFollow] Following '{target.name}' | pos={transform.position} | rot={transform.rotation.eulerAngles}");
         }
 
         private void OnDisable()
@@ -63,19 +56,23 @@ namespace AdventureMultiplayer
         {
             if (m_target == null) return;
 
-            // Smooth look-at point to avoid Y-snap jitter on ledge steps.
-            m_smoothedLookAt = Vector3.SmoothDamp(
-                m_smoothedLookAt, m_target.position, ref m_lookAtVelocity,
-                1f / lookAtSmooth, Mathf.Infinity, Time.deltaTime);
-
-            // Desired position is always the fixed offset from the player.
-            var desiredPos = m_target.position + offset;
-
             transform.position = Vector3.SmoothDamp(
-                transform.position, desiredPos, ref m_velocity,
+                transform.position, DesiredPos(), ref m_velocity,
                 1f / positionSmooth, Mathf.Infinity, Time.deltaTime);
 
-            transform.LookAt(m_smoothedLookAt);
+            transform.rotation = DesiredRot();
+        }
+
+        // Camera sits directly behind (-Z) and above the player.
+        private Vector3 DesiredPos() =>
+            m_target.position + new Vector3(0f, height, -distance);
+
+        // Look toward the player with Y rotation locked to 0 (no side rotation).
+        private Quaternion DesiredRot()
+        {
+            var toPlayer = m_target.position - transform.position;
+            if (toPlayer.sqrMagnitude < 0.001f) return Quaternion.identity;
+            return Quaternion.LookRotation(toPlayer, Vector3.up);
         }
     }
 }

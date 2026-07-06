@@ -4,11 +4,17 @@ using UnityEngine;
 namespace AdventureMultiplayer
 {
     /// <summary>
-    /// Applied when a player hits a Banana peel.
-    /// Clamps lateral movement to forward-only (can stop or go straight — no turning, no jumping).
-    /// Add to every player prefab.
+    /// Applied when a player hits a Banana Peel.
+    ///
+    /// Movement restriction works in two layers:
+    ///   1. SlipAwarePlayerInputManager (required on every player prefab) filters the raw
+    ///      input direction to forward-only before PLAYER TWO's state machine computes
+    ///      velocity — this is the primary fix.
+    ///   2. Apply() snaps any existing sideways/backward velocity to zero immediately so
+    ///      the player doesn't coast sideways on existing momentum.
+    ///
+    /// Add to every player prefab alongside SlipAwarePlayerInputManager.
     /// </summary>
-    [DefaultExecutionOrder(100)]
     [AddComponentMenu("Rush Champions/Slip Effect")]
     public class SlipEffect : MonoBehaviour
     {
@@ -30,10 +36,20 @@ namespace AdventureMultiplayer
         {
             _slipping = true;
             _endTime  = Time.time + duration;
+
+            // Immediately snap any sideways / backward velocity to zero so the player
+            // doesn't coast in the wrong direction while the input filter takes over.
+            if (_player != null && _player.enabled)
+            {
+                var forward = _player.localForward;
+                float dot   = Vector3.Dot(_player.lateralVelocity, forward);
+                _player.lateralVelocity = dot > 0f ? forward * dot : Vector3.zero;
+            }
+
             Debug.Log($"[SlipEffect] {name} slipping for {duration}s.");
         }
 
-        private void LateUpdate()
+        private void Update()
         {
             if (!_slipping) return;
 
@@ -43,27 +59,15 @@ namespace AdventureMultiplayer
                 return;
             }
 
-            if (_player != null && _player.enabled)
+            // Cancel upward velocity while airborne — prevents jumping during slip.
+            if (_player != null && _player.enabled &&
+                _player.verticalVelocity.y > 0f && !_player.isGrounded)
             {
-                var forward = _player.localForward;
-                float dot   = Vector3.Dot(_player.lateralVelocity, forward);
-
-                // Allow forward motion only; zero out lateral and side components
-                _player.lateralVelocity = dot > 0f ? forward * dot : Vector3.zero;
-
-                // Cancel any jump (vertical upward velocity)
-                if (_player.verticalVelocity.y > 0f && !_player.isGrounded)
-                    _player.verticalVelocity = Vector3.zero;
+                _player.verticalVelocity = Vector3.zero;
             }
 
             if (_aiInput != null)
-            {
-                // Clamp AI move direction to forward only
-                var fwd = transform.forward;
-                float dot = Vector3.Dot(_aiInput.desiredMoveDirection, fwd);
-                _aiInput.desiredMoveDirection = dot > 0f ? fwd * dot : Vector3.zero;
                 _aiInput.jumpQueued = false;
-            }
         }
     }
 }

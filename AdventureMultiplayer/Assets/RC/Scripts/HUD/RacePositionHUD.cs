@@ -19,6 +19,8 @@ namespace AdventureMultiplayer
 
         private static readonly string[] k_suffixes = { "", "st", "nd", "rd" };
 
+        private float m_nextHudLogTime;
+
         private void Update()
         {
             if (positionText == null) return;
@@ -30,6 +32,13 @@ namespace AdventureMultiplayer
             }
 
             int pos = RaceManager.Instance.GetLocalRacePosition();
+
+            if (Time.time >= m_nextHudLogTime)
+            {
+                m_nextHudLogTime = Time.time + 1f;
+                Debug.Log($"[RacePositionHUD] pos={pos} isServer={RaceManager.Instance.IsServer}");
+            }
+
             if (pos <= 0)
             {
                 positionText.text = string.Empty;

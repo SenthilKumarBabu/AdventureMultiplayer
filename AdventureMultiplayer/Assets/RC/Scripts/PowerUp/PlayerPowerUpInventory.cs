@@ -37,6 +37,7 @@ namespace AdventureMultiplayer
 
         [SerializeField] private NetworkObject bananaPeelPrefab;
         [SerializeField] private NetworkObject decoyBoxPrefab;
+        [SerializeField] private NetworkObject rocketProjectilePrefab;
 
         // ── Networked slots ───────────────────────────────────────────────────
 
@@ -49,15 +50,11 @@ namespace AdventureMultiplayer
         private const float SpeedBoostAccelMult = 1.2f;
         private const float SpeedBoostDur       = 5f;
 
-        private const float RocketSpeedMult = 2.0f;
-        private const float RocketAccelMult = 2.0f;
-        private const float RocketDur       = 3f;
-
         private const float ShieldMaxDur  = 30f;
         private const float InvincDur     = 2f;
         private const float StunBoltDur   = 3f;
-        private const float FreezeDur     = 1f;
-        private const float BananaSlipDur = 2.5f;
+        [SerializeField] private float freezeDuration = 10f;
+        [SerializeField] private float bananaSlipDuration = 2.5f;
         private const float DecoyStunDur  = 2f;
 
         // ── Component refs ────────────────────────────────────────────────────
@@ -72,7 +69,6 @@ namespace AdventureMultiplayer
         // ── Timed-effect cancellation (owner client) ──────────────────────────
 
         private CancellationTokenSource _speedBoostCts;
-        private CancellationTokenSource _rocketCts;
 
         // ── Timed-effect cancellation (server) ────────────────────────────────
 
@@ -95,8 +91,8 @@ namespace AdventureMultiplayer
             _stun         = GetComponent<StunEffect>();
             _slip         = GetComponent<SlipEffect>();
 
-            // Replace SO asset references with per-instance copies so SpeedBoost /
-            // Rocket can safely mutate values without affecting other players.
+            // Replace SO asset references with per-instance copies so SpeedBoost
+            // can safely mutate values without affecting other players.
             if (_statsManager != null && _statsManager.stats != null)
             {
                 var arr = _statsManager.stats;
@@ -116,7 +112,6 @@ namespace AdventureMultiplayer
         {
             All.Remove(OwnerClientId);
             _speedBoostCts?.Cancel();
-            _rocketCts?.Cancel();
             _shieldCts?.Cancel();
             _invincCts?.Cancel();
         }
@@ -199,15 +194,42 @@ namespace AdventureMultiplayer
 
         private void DispatchRocket()
         {
-            int lvl = PowerUpUpgradeManager.Instance?.GetEffectiveLevel(PowerUpType.Rocket) ?? 1;
-            Debug.Log($"[PowerUpInventory] Rocket Lv{lvl} → client {OwnerClientId}.");
-            BeginRocketClientRpc(RocketSpeedMult, RocketAccelMult, RocketDur, OwnerOnly());
-        }
+            if (rocketProjectilePrefab == null)
+            {
+                Debug.LogWarning("[PowerUpInventory] Rocket projectile prefab not assigned — assign it in the Inspector.");
+                return;
+            }
 
-        [ClientRpc]
-        private void BeginRocketClientRpc(float sMult, float aMult, float dur, ClientRpcParams _ = default)
-        {
-            RocketAsync(sMult, aMult, dur).Forget();
+            if (RaceManager.Instance == null) return;
+
+            // Target the player directly ahead; if already 1st, target the player behind.
+            ulong targetId = RaceManager.Instance.GetPlayerAhead(OwnerClientId);
+            if (targetId == ulong.MaxValue)
+                targetId = RaceManager.Instance.GetPlayerBehind(OwnerClientId);
+            if (targetId == ulong.MaxValue)
+            {
+                Debug.Log("[PowerUpInventory] Rocket: no target found.");
+                return;
+            }
+
+            int     lvl      = PowerUpUpgradeManager.Instance?.GetEffectiveLevel(PowerUpType.Rocket) ?? 1;
+            Vector3 spawnPos = transform.position + transform.forward * 1f + Vector3.up * 0.5f;
+
+            // Spawn already facing the target so the rocket doesn't spin to acquire.
+            Quaternion spawnRot = transform.rotation;
+            if (All.TryGetValue(targetId, out var targetInv))
+            {
+                Vector3 toTarget = targetInv.transform.position - spawnPos;
+                if (toTarget.sqrMagnitude > 0.01f)
+                    spawnRot = Quaternion.LookRotation(toTarget);
+            }
+
+            var obj = Instantiate(rocketProjectilePrefab, spawnPos, spawnRot);
+            obj.Spawn();
+            if (obj.TryGetComponent<RocketProjectile>(out var rocket))
+                rocket.Init(OwnerClientId, targetId);
+
+            Debug.Log($"[PowerUpInventory] Rocket Lv{lvl} launched by client {OwnerClientId} → targeting client {targetId}.");
         }
 
         // ── Stats boost async (owner client) ──────────────────────────────────
@@ -233,26 +255,6 @@ namespace AdventureMultiplayer
             {
                 if (_statsManager != null) ScaleAllStats(_statsManager, 1f / sMult, 1f / aMult);
                 Debug.Log("[PowerUpInventory] SpeedBoost ended.");
-            }
-        }
-
-        private async UniTaskVoid RocketAsync(float sMult, float aMult, float dur)
-        {
-            if (_statsManager == null) return;
-            _rocketCts?.Cancel();
-            _rocketCts = new CancellationTokenSource();
-            var token = CancellationTokenSource
-                .CreateLinkedTokenSource(_rocketCts.Token, destroyCancellationToken).Token;
-
-            ScaleAllStats(_statsManager, sMult, aMult);
-            Debug.Log($"[PowerUpInventory] Rocket active x{sMult} for {dur}s.");
-
-            try   { await UniTask.Delay(TimeSpan.FromSeconds(dur), cancellationToken: token); }
-            catch (OperationCanceledException) { }
-            finally
-            {
-                if (_statsManager != null) ScaleAllStats(_statsManager, 1f / sMult, 1f / aMult);
-                Debug.Log("[PowerUpInventory] Rocket ended.");
             }
         }
 
@@ -324,15 +326,23 @@ namespace AdventureMultiplayer
             if (RaceManager.Instance == null) return;
             int lvl = PowerUpUpgradeManager.Instance?.GetEffectiveLevel(PowerUpType.StunBolt) ?? 1;
 
+            // Target the player ahead; if in 1st place, stun the player directly behind instead.
             ulong targetId = RaceManager.Instance.GetPlayerAhead(OwnerClientId);
-            if (targetId == ulong.MaxValue) { Debug.Log("[PowerUpInventory] StunBolt: no target ahead."); return; }
+            if (targetId == ulong.MaxValue)
+                targetId = RaceManager.Instance.GetPlayerBehind(OwnerClientId);
+            if (targetId == ulong.MaxValue) { Debug.Log("[PowerUpInventory] StunBolt: no other player found."); return; }
             if (!All.TryGetValue(targetId, out var target)) { Debug.Log($"[PowerUpInventory] StunBolt: target {targetId} not in registry."); return; }
 
-            // Shield absorbs StunBolt
+            // Shield absorbs StunBolt (consumed); Invincibility blocks it (not consumed).
             if (target._health != null && target._health.IsShielded)
             {
                 target._health.SetShield(false);
                 Debug.Log($"[PowerUpInventory] StunBolt Lv{lvl} blocked by shield on client {targetId}.");
+                return;
+            }
+            if (target._health != null && target._health.IsInvincible)
+            {
+                Debug.Log($"[PowerUpInventory] StunBolt Lv{lvl} blocked by invincibility on client {targetId}.");
                 return;
             }
 
@@ -346,15 +356,21 @@ namespace AdventureMultiplayer
         {
             if (RaceManager.Instance == null) return;
 
+            // Only swap with the player directly ahead. Do nothing if already in 1st.
             ulong targetId = RaceManager.Instance.GetPlayerAhead(OwnerClientId);
-            if (targetId == ulong.MaxValue) { Debug.Log("[PowerUpInventory] Swap: no target ahead."); return; }
+            if (targetId == ulong.MaxValue) { Debug.Log("[PowerUpInventory] Swap: already in 1st place — no effect."); return; }
             if (!All.TryGetValue(targetId, out var target)) { Debug.Log($"[PowerUpInventory] Swap: target {targetId} not found."); return; }
 
-            // Shield counters Swap
+            // Shield counters Swap (consumed); Invincibility blocks it (not consumed).
             if (target._health != null && target._health.IsShielded)
             {
                 target._health.SetShield(false);
                 Debug.Log($"[PowerUpInventory] Swap blocked by shield on client {targetId}.");
+                return;
+            }
+            if (target._health != null && target._health.IsInvincible)
+            {
+                Debug.Log($"[PowerUpInventory] Swap blocked by invincibility on client {targetId}.");
                 return;
             }
 
@@ -365,6 +381,11 @@ namespace AdventureMultiplayer
             Debug.Log($"[PowerUpInventory] Swap Lv{lvl}: client {OwnerClientId} ↔ {targetId}.");
             TeleportClientRpc(targetPos, OwnerOnly());
             target.TeleportClientRpc(myPos, TargetOnly(targetId));
+
+            // Swap checkpoint indices so RecalculatePositions ranks them correctly
+            // after the teleport. Without this, the higher-checkpoint player keeps
+            // outscoring the other even when physically behind.
+            RaceManager.Instance.SwapCheckpoints(OwnerClientId, targetId);
         }
 
         // ── Freeze ────────────────────────────────────────────────────────────
@@ -377,21 +398,26 @@ namespace AdventureMultiplayer
             var targets = RaceManager.Instance.GetPlayersBehind(OwnerClientId);
             if (targets.Count == 0) { Debug.Log("[PowerUpInventory] Freeze: no targets behind."); return; }
 
-            Debug.Log($"[PowerUpInventory] Freeze Lv{lvl} — {targets.Count} targets for {FreezeDur}s.");
+            Debug.Log($"[PowerUpInventory] Freeze Lv{lvl} — {targets.Count} targets for {freezeDuration}s.");
 
             foreach (ulong id in targets)
             {
                 if (!All.TryGetValue(id, out var target)) continue;
 
-                // Shield absorbs Freeze
+                // Shield absorbs Freeze (consumed); Invincibility blocks it (not consumed).
                 if (target._health != null && target._health.IsShielded)
                 {
                     target._health.SetShield(false);
                     Debug.Log($"[PowerUpInventory] Freeze blocked by shield on client {id}.");
                     continue;
                 }
+                if (target._health != null && target._health.IsInvincible)
+                {
+                    Debug.Log($"[PowerUpInventory] Freeze blocked by invincibility on client {id}.");
+                    continue;
+                }
 
-                target.ApplyStunClientRpc(FreezeDur, TargetOnly(id));
+                target.ApplyStunClientRpc(freezeDuration, TargetOnly(id));
             }
         }
 
@@ -407,7 +433,7 @@ namespace AdventureMultiplayer
             var obj = Instantiate(bananaPeelPrefab, spawnPos, Quaternion.identity);
             obj.Spawn();
             if (obj.TryGetComponent<BananaPeel>(out var peel))
-                peel.Init(OwnerClientId, BananaSlipDur);
+                peel.Init(OwnerClientId, bananaSlipDuration);
 
             Debug.Log($"[PowerUpInventory] Banana Lv{lvl} spawned by client {OwnerClientId}.");
         }

@@ -1,4 +1,5 @@
 using PLAYERTWO.PlatformerProject;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,7 +24,14 @@ namespace AdventureMultiplayer
         private void Update()
         {
             if (_player == null)
-                _player = FindFirstObjectByType<Player>();
+            {
+                // Use the NetworkObject that belongs to THIS client — not FindFirstObjectByType
+                // which always returns the first player spawned (C0) on every machine.
+                var localObj = NetworkManager.Singleton?.LocalClient?.PlayerObject;
+                if (localObj != null)
+                    _player = localObj.GetComponent<Player>();
+            }
+
             if (_player == null || slider == null) return;
 
             var health = _player.health;

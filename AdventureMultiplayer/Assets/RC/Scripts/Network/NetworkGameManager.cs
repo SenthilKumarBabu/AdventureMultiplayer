@@ -97,13 +97,15 @@ namespace AdventureMultiplayer
         private Vector3 GetSpawnPoint(int index)
         {
             if (spawnPoints == null || spawnPoints.Length == 0) return Vector3.zero;
-            return spawnPoints[index % spawnPoints.Length].position;
+            var pos = spawnPoints[index % spawnPoints.Length].position;
+            Debug.Log($"[NetworkGameManager] SpawnPoint index={index} -> pos={pos}");
+            return pos;
         }
 
         private Quaternion GetSpawnRotation(int index)
         {
-            if (spawnPoints == null || spawnPoints.Length == 0) return Quaternion.identity;
-            return spawnPoints[index % spawnPoints.Length].rotation;
+            Debug.Log($"[NetworkGameManager] SpawnRotation index={index} -> forced to identity (0,0,0)");
+            return Quaternion.identity;
         }
     }
 }

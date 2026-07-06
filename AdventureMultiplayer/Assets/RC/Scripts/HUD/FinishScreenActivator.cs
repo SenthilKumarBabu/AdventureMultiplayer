@@ -37,15 +37,19 @@ namespace AdventureMultiplayer
             m_spectatorCts?.Cancel();
             m_spectatorCts?.Dispose();
             if (!m_subscribed || RaceManager.Instance == null) return;
-            RaceManager.Instance.AllPlayersFinished.OnValueChanged -= OnAllFinished;
-            RaceManager.Instance.RaceEntries.OnListChanged         -= OnRaceEntriesChanged;
+            RaceManager.Instance.AllPlayersFinished.OnValueChanged   -= OnAllFinished;
+            RaceManager.Instance.RaceEntries.OnListChanged           -= OnRaceEntriesChanged;
+            RaceManager.Instance.FinishRecords.OnListChanged         -= OnFinishRecordsChanged;
+            RaceManager.Instance.WinnerClientId.OnValueChanged       -= OnWinnerChanged;
         }
 
         private void TrySubscribe()
         {
             if (RaceManager.Instance == null) return;
-            RaceManager.Instance.AllPlayersFinished.OnValueChanged += OnAllFinished;
-            RaceManager.Instance.RaceEntries.OnListChanged         += OnRaceEntriesChanged;
+            RaceManager.Instance.AllPlayersFinished.OnValueChanged   += OnAllFinished;
+            RaceManager.Instance.RaceEntries.OnListChanged           += OnRaceEntriesChanged;
+            RaceManager.Instance.FinishRecords.OnListChanged         += OnFinishRecordsChanged;
+            RaceManager.Instance.WinnerClientId.OnValueChanged       += OnWinnerChanged;
             m_subscribed = true;
 
             if (RaceManager.Instance.AllPlayersFinished.Value)
@@ -59,10 +63,40 @@ namespace AdventureMultiplayer
             if (current) ShowResults();
         }
 
-        private void OnRaceEntriesChanged(NetworkListEvent<RaceEntry> _)
+        // WinnerClientId is a NetworkVariable (not a NetworkList) so it replicates
+        // immediately without the NGO staging delay. Use it to open results the moment
+        // the local player crosses the finish line first.
+        private void OnWinnerChanged(ulong _, ulong current)
         {
-            if (!m_localFinished)
-                CheckLocalPlayerFinished();
+            if (m_localFinished || current == ulong.MaxValue) return;
+            if (NetworkManager.Singleton != null && current == NetworkManager.Singleton.LocalClientId)
+                OnLocalPlayerFinished();
+        }
+
+        // FinishRecords uses Add so this fires immediately with no NGO staging delay.
+        private void OnFinishRecordsChanged(NetworkListEvent<FinishRecord> evt)
+        {
+            if (m_localFinished) return;
+            if (NetworkManager.Singleton != null
+                && evt.Value.ClientId == NetworkManager.Singleton.LocalClientId
+                && evt.Value.FinishTimeSeconds > 0f)
+                OnLocalPlayerFinished();
+        }
+
+        private void OnRaceEntriesChanged(NetworkListEvent<RaceEntry> evt)
+        {
+            if (m_localFinished) return;
+            if (NetworkManager.Singleton != null)
+            {
+                var e = evt.Value;
+                if (e.ClientId == NetworkManager.Singleton.LocalClientId
+                    && e.Finished && e.FinishTimeSeconds > 0f)
+                {
+                    OnLocalPlayerFinished();
+                    return;
+                }
+            }
+            CheckLocalPlayerFinished();
         }
 
         private void CheckLocalPlayerFinished()
@@ -77,11 +111,26 @@ namespace AdventureMultiplayer
                 var entry = rm.RaceEntries[i];
                 if (entry.ClientId == localId && entry.Finished && entry.FinishTimeSeconds > 0f)
                 {
-                    m_localFinished = true;
-                    EnterSpectatorAfterDelayAsync().Forget();
+                    OnLocalPlayerFinished();
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// Called the moment we detect the local player has finished the race.
+        /// If all players are already done → show results immediately (single player
+        /// or last finisher). Otherwise → enter spectator mode and wait for the
+        /// AllPlayersFinished callback to show the panel.
+        /// </summary>
+        private void OnLocalPlayerFinished()
+        {
+            m_localFinished = true;
+            bool allDone = RaceManager.Instance != null && RaceManager.Instance.AllPlayersFinished.Value;
+            if (allDone)
+                ShowResults();
+            else
+                EnterSpectatorAfterDelayAsync().Forget();
         }
 
         private async UniTaskVoid EnterSpectatorAfterDelayAsync()

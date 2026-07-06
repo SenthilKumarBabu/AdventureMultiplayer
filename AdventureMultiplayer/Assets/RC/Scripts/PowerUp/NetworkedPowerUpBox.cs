@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using PLAYERTWO.PlatformerProject;
 using Unity.Netcode;
 using UnityEngine;
@@ -28,39 +27,16 @@ namespace AdventureMultiplayer
     [AddComponentMenu("Rush Champions/Networked Power-Up Box")]
     public class NetworkedPowerUpBox : NetworkBehaviour
     {
-        [SerializeField] private PowerUpBoxType boxType      = PowerUpBoxType.Yellow;
-        [SerializeField] private float          respawnDelay = 10f;
-        [SerializeField] private Renderer       boxRenderer;
-        [SerializeField] private Collider       boxCollider;
+        [SerializeField] private PowerUpType powerUpType   = PowerUpType.SpeedBoost;
+        [SerializeField] private float       respawnDelay = 10f;
+        [SerializeField] private Renderer    boxRenderer;
+        [SerializeField] private Collider    boxCollider;
 
         // Synced to clients so all machines show/hide the box in sync
         private NetworkVariable<bool> m_Active = new(
             true,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
-
-        // ── Pool per box type ─────────────────────────────────────────────────
-
-        private static readonly PowerUpType[] YellowPool =
-        {
-            PowerUpType.SpeedBoost,
-            PowerUpType.Banana,
-            PowerUpType.DecoyBox,
-        };
-
-        private static readonly PowerUpType[] RedPool =
-        {
-            PowerUpType.Rocket,
-            PowerUpType.StunBolt,
-            PowerUpType.Swap,
-            PowerUpType.Freeze,
-        };
-
-        private static readonly PowerUpType[] GreenPool =
-        {
-            PowerUpType.Shield,
-            PowerUpType.Invincibility,
-        };
 
         // ── Lifecycle ─────────────────────────────────────────────────────────
 
@@ -93,12 +69,11 @@ namespace AdventureMultiplayer
                 return;
             }
 
-            PowerUpType type = PickRandom();
-            bool added = inv.TryAddPowerUp(type);
+            bool added = inv.TryAddPowerUp(powerUpType);
 
             if (added)
             {
-                Debug.Log($"[PowerUpBox] Client {clientId} got {type} from {boxType} box.");
+                Debug.Log($"[PowerUpBox] Client {clientId} got {powerUpType}.");
                 m_Active.Value = false;
                 RespawnAsync().Forget();
             }
@@ -115,7 +90,7 @@ namespace AdventureMultiplayer
             if (IsServer)
             {
                 m_Active.Value = true;
-                Debug.Log($"[PowerUpBox] {boxType} box respawned.");
+                Debug.Log($"[PowerUpBox] {powerUpType} box respawned.");
             }
         }
 
@@ -129,17 +104,5 @@ namespace AdventureMultiplayer
             if (boxCollider != null) boxCollider.enabled = isActive;
         }
 
-        // ── Random pick ───────────────────────────────────────────────────────
-
-        private PowerUpType PickRandom()
-        {
-            PowerUpType[] pool = boxType switch
-            {
-                PowerUpBoxType.Red   => RedPool,
-                PowerUpBoxType.Green => GreenPool,
-                _                   => YellowPool,
-            };
-            return pool[Random.Range(0, pool.Length)];
-        }
     }
 }

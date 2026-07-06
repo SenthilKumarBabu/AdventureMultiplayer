@@ -23,8 +23,15 @@ namespace AdventureMultiplayer
     [AddComponentMenu("Adventure Multiplayer/Networked Health")]
     public class NetworkedHealth : NetworkBehaviour
     {
-        public NetworkVariable<int> Health { get; private set; } =
-            new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        public NetworkVariable<int>  Health          { get; private set; } =
+            new(0,     NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+        // Replicated so every client can observe shield/invincibility for VFX or HUD.
+        public NetworkVariable<bool> ShieldActive    { get; private set; } =
+            new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+        public NetworkVariable<bool> InvincibleActive { get; private set; } =
+            new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private Health m_health;
         private bool   m_shieldActive;
@@ -32,6 +39,7 @@ namespace AdventureMultiplayer
 
         public bool IsShielded   => m_shieldActive;
         public bool IsInvincible => m_invincibleActive;
+        public int  MaxHealth    => m_health != null ? m_health.max : 100;
 
         public override void OnNetworkSpawn()
         {
@@ -71,7 +79,7 @@ namespace AdventureMultiplayer
 
             if (m_shieldActive)
             {
-                m_shieldActive = false;
+                SetShield(false);
                 Debug.Log($"[NetworkedHealth] Shield absorbed hit for client {OwnerClientId}.");
                 return;
             }
@@ -86,11 +94,47 @@ namespace AdventureMultiplayer
             ApplyDamageClientRpc(damage, origin);
         }
 
-        /// <summary>Activate shield — absorbs the next hit then self-clears.</summary>
-        public void SetShield(bool active) => m_shieldActive = active;
+        /// <summary>
+        /// Called directly from server-side power-up code (e.g. RocketProjectile).
+        /// Bypasses PLAYER TWO's recovery-frame cooldown by using Health.Set() instead of Damage().
+        /// Shield / invincibility must be validated by the caller before invoking this.
+        /// </summary>
+        public void ApplyDamageFromPowerUp(int damage, Vector3 origin)
+        {
+            if (!IsServer) return;
 
-        /// <summary>Activate full invincibility — blocks all incoming damage for a timed duration managed by the caller.</summary>
-        public void SetInvincible(bool active) => m_invincibleActive = active;
+            int newHealth = Mathf.Max(0, Health.Value - damage);
+            Health.Value  = newHealth;
+
+            // Replicate to all clients so the local Health component and any HUD listening to
+            // it also update. Uses Set() not Damage() to skip PLAYER TWO's recovery cooldown.
+            ForceSetHealthClientRpc(newHealth, origin);
+
+            Debug.Log($"[NetworkedHealth] Power-up damage {damage} → client {OwnerClientId} HP {newHealth}");
+        }
+
+        [ClientRpc]
+        private void ForceSetHealthClientRpc(int value, Vector3 origin)
+        {
+            if (m_health != null)
+                m_health.Set(value);
+
+            Debug.Log($"[NetworkedHealth] ForceSetHealth {value} on client {OwnerClientId}");
+        }
+
+        /// <summary>Activate/deactivate shield. Replicates state to all clients via ShieldActive NetworkVariable.</summary>
+        public void SetShield(bool active)
+        {
+            m_shieldActive = active;
+            if (IsServer) ShieldActive.Value = active;
+        }
+
+        /// <summary>Activate/deactivate invincibility. Replicates state to all clients via InvincibleActive NetworkVariable.</summary>
+        public void SetInvincible(bool active)
+        {
+            m_invincibleActive = active;
+            if (IsServer) InvincibleActive.Value = active;
+        }
 
         // ── ClientRpcs ────────────────────────────────────────────────────────
 

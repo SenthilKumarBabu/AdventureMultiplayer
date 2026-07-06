@@ -1,4 +1,4 @@
-using TMPro;
+using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +11,7 @@ namespace AdventureMultiplayer
     /// Setup:
     ///   - Add this component to the HUD canvas (or a child panel).
     ///   - Assign 3 SlotRoot GameObjects, each containing an Image (icon) and a Button.
-    ///   - Assign icon sprites per PowerUpType in the Inspector array (index = (int)PowerUpType).
+    ///   - Assign icon sprites per PowerUpType in the Inspector array.
     ///   - Set Navigation.None on all buttons (prevents Submit / gamepad re-fire).
     /// </summary>
     [AddComponentMenu("Rush Champions/Power-Up Slot HUD")]
@@ -20,19 +20,24 @@ namespace AdventureMultiplayer
         [System.Serializable]
         public struct SlotUI
         {
-            public Button    button;
-            public Image     icon;
-            public GameObject emptyOverlay;  // optional grey tint shown when slot is empty
+            public Button     button;
+            public Image      icon;
+            public GameObject emptyOverlay;
         }
 
-        [SerializeField] private SlotUI[] slots = new SlotUI[3];
+        [System.Serializable]
+        public struct PowerUpIconEntry
+        {
+            public PowerUpType type;
+            public Sprite      icon;
+        }
 
-        // Icon sprites indexed by (int)PowerUpType — assign in Inspector
-        [SerializeField] private Sprite[] powerUpIcons;
-
-        [SerializeField] private Sprite emptySlotSprite;
+        [SerializeField] private SlotUI[]           slots = new SlotUI[3];
+        [SerializeField] private PowerUpIconEntry[] powerUpIcons;
+        [SerializeField] private Sprite             emptySlotSprite;
 
         private PlayerPowerUpInventory _inventory;
+        private bool                   _subscribed;
 
         // ── Lifecycle ─────────────────────────────────────────────────────────
 
@@ -44,52 +49,79 @@ namespace AdventureMultiplayer
                 if (slots[i].button != null)
                 {
                     var nav = slots[i].button.navigation;
-                    nav.mode = UnityEngine.UI.Navigation.Mode.None;
+                    nav.mode = Navigation.Mode.None;
                     slots[i].button.navigation = nav;
-
                     slots[i].button.onClick.AddListener(() => OnSlotTapped(slotIdx));
                 }
             }
 
-            FindLocalInventory();
+            // Try immediately; if the local player's inventory hasn't registered yet
+            // (common for non-host clients), poll each frame until it appears.
+            TryBindInventory();
+            if (_inventory != null)
+            {
+                Subscribe();
+                RefreshAll();
+            }
+            else
+            {
+                WaitForInventoryAsync().Forget();
+            }
         }
 
         private void OnEnable()
         {
-            if (_inventory == null) FindLocalInventory();
-            if (_inventory != null)
-                _inventory.Slots.OnListChanged += OnSlotsChanged;
+            // Re-subscribe after the HUD was disabled (e.g. countdown hide/show).
+            // No-op if inventory not found yet — WaitForInventoryAsync handles that.
+            Subscribe();
             RefreshAll();
         }
 
-        private void OnDisable()
-        {
-            if (_inventory != null)
-                _inventory.Slots.OnListChanged -= OnSlotsChanged;
-        }
+        private void OnDisable() => Unsubscribe();
 
-        // ── Find local inventory ──────────────────────────────────────────────
+        // ── Inventory binding ─────────────────────────────────────────────────
 
-        private void FindLocalInventory()
+        private void TryBindInventory()
         {
+            if (_inventory != null) return;
             if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient) return;
 
             ulong localId = NetworkManager.Singleton.LocalClientId;
             if (PlayerPowerUpInventory.All.TryGetValue(localId, out var inv))
-            {
                 _inventory = inv;
-                _inventory.Slots.OnListChanged += OnSlotsChanged;
+        }
+
+        private async UniTaskVoid WaitForInventoryAsync()
+        {
+            while (_inventory == null)
+            {
+                await UniTask.DelayFrame(1, cancellationToken: this.GetCancellationTokenOnDestroy());
+                TryBindInventory();
             }
+
+            Subscribe();
+            RefreshAll();
+        }
+
+        private void Subscribe()
+        {
+            if (_subscribed || _inventory == null) return;
+            _inventory.Slots.OnListChanged += OnSlotsChanged;
+            _subscribed = true;
+        }
+
+        private void Unsubscribe()
+        {
+            if (!_subscribed || _inventory == null) return;
+            _inventory.Slots.OnListChanged -= OnSlotsChanged;
+            _subscribed = false;
         }
 
         // ── Slot tapped ───────────────────────────────────────────────────────
 
         private void OnSlotTapped(int slotIndex)
         {
-            if (_inventory == null) FindLocalInventory();
-            if (_inventory == null) return;
-            if (_inventory.GetSlot(slotIndex) == -1) return;
-
+            if (_inventory == null || _inventory.GetSlot(slotIndex) == -1) return;
             _inventory.UseSlotServerRpc(slotIndex);
         }
 
@@ -109,7 +141,7 @@ namespace AdventureMultiplayer
         {
             if (i >= slots.Length) return;
 
-            int typeInt = _inventory != null ? _inventory.GetSlot(i) : -1;
+            int  typeInt = _inventory != null ? _inventory.GetSlot(i) : -1;
             bool hasItem = typeInt >= 0;
 
             if (slots[i].icon != null)
@@ -124,8 +156,10 @@ namespace AdventureMultiplayer
 
         private Sprite GetIcon(int typeInt)
         {
-            if (powerUpIcons != null && typeInt >= 0 && typeInt < powerUpIcons.Length)
-                return powerUpIcons[typeInt];
+            if (powerUpIcons == null) return emptySlotSprite;
+            var type = (PowerUpType)typeInt;
+            foreach (var entry in powerUpIcons)
+                if (entry.type == type) return entry.icon;
             return emptySlotSprite;
         }
     }

@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -58,13 +59,39 @@ namespace AdventureMultiplayer
             SlideIn();
 
             if (RaceManager.Instance != null)
+            {
                 RaceManager.Instance.AllPlayersFinished.OnValueChanged += OnAllPlayersFinished;
+                RaceManager.Instance.RaceEntries.OnListChanged         += OnRaceEntriesChanged;
+                RaceManager.Instance.FinishRecords.OnListChanged       += OnFinishRecordsChanged;
+            }
+
+            // On pure clients, the NetworkList backing store may still be stale when the
+            // panel first opens. Rebuild every frame for a few seconds so any late-arriving
+            // NGO updates (healed Finished=true entries) are reflected without user interaction.
+            RebuildUntilStableAsync().Forget();
+        }
+
+        private async UniTaskVoid RebuildUntilStableAsync()
+        {
+            float deadline = Time.time + 3f;
+            while (Time.time < deadline)
+            {
+                await UniTask.NextFrame(cancellationToken: destroyCancellationToken);
+                if (RaceManager.Instance == null) break;
+                m_allFinished = RaceManager.Instance.AllPlayersFinished.Value;
+                BuildResults();
+                RefreshWaitingState();
+            }
         }
 
         private void OnDisable()
         {
             if (RaceManager.Instance != null)
+            {
                 RaceManager.Instance.AllPlayersFinished.OnValueChanged -= OnAllPlayersFinished;
+                RaceManager.Instance.RaceEntries.OnListChanged         -= OnRaceEntriesChanged;
+                RaceManager.Instance.FinishRecords.OnListChanged       -= OnFinishRecordsChanged;
+            }
         }
 
         private void Update()
@@ -89,6 +116,9 @@ namespace AdventureMultiplayer
             RefreshWaitingState();
         }
 
+        private void OnRaceEntriesChanged(NetworkListEvent<RaceEntry> _)   => BuildResults();
+        private void OnFinishRecordsChanged(NetworkListEvent<FinishRecord> _) => BuildResults();
+
         // ── UI ────────────────────────────────────────────────────────────────
 
         private void RefreshWaitingState()
@@ -106,26 +136,35 @@ namespace AdventureMultiplayer
                 ? NetworkManager.Singleton.LocalClientId
                 : ulong.MaxValue;
 
-            // Local player's own time shown prominently.
+            // Build a lookup from FinishRecords — this uses Add (never [i]=value) so it has
+            // no NGO staging delay and is correct on both host and remote clients.
+            var finishLookup = new System.Collections.Generic.Dictionary<ulong, FinishRecord>();
+            for (int i = 0; i < rm.FinishRecords.Count; i++)
+                finishLookup[rm.FinishRecords[i].ClientId] = rm.FinishRecords[i];
+
+            // Local player's own time.
             if (timeText != null)
             {
                 timeText.text = "";
-                for (int i = 0; i < rm.RaceEntries.Count; i++)
-                {
-                    var e = rm.RaceEntries[i];
-                    if (e.ClientId != localId) continue;
-                    timeText.text = e.Finished && e.FinishTimeSeconds > 0f
-                        ? $"YOUR TIME\n{FormatTime(e.FinishTimeSeconds)}"
-                        : "";
-                    break;
-                }
+                if (finishLookup.TryGetValue(localId, out var localRec) && localRec.FinishTimeSeconds > 0f)
+                    timeText.text = $"YOUR TIME\n{FormatTime(localRec.FinishTimeSeconds)}";
+                else if (rm.TryGetServerFinishTime(localId, out float serverTime) && serverTime > 0f)
+                    timeText.text = $"YOUR TIME\n{FormatTime(serverTime)}";
             }
 
             if (resultsText == null) return;
 
-            var sorted = new System.Collections.Generic.List<RaceEntry>();
+            // Deduplicate by ClientId: keep only the best entry per player.
+            // Priority: finished with real time > finished (DNF/timeout) > still racing.
+            var bestByClient = new System.Collections.Generic.Dictionary<ulong, RaceEntry>();
             for (int i = 0; i < rm.RaceEntries.Count; i++)
-                sorted.Add(rm.RaceEntries[i]);
+            {
+                var e = rm.RaceEntries[i];
+                if (!bestByClient.TryGetValue(e.ClientId, out var existing) || EntryScore(e) > EntryScore(existing))
+                    bestByClient[e.ClientId] = e;
+            }
+
+            var sorted = new System.Collections.Generic.List<RaceEntry>(bestByClient.Values);
             sorted.Sort((a, b) => a.RacePosition.CompareTo(b.RacePosition));
 
             var sb = new System.Text.StringBuilder();
@@ -142,11 +181,12 @@ namespace AdventureMultiplayer
                     ? k_characterNames[charIdx] : "Player";
                 string name    = isLocal ? $"You ({charName})" : charName;
 
+                // FinishRecords is the authoritative source — works on both host and remote clients.
                 string status;
-                if (!entry.Finished)
-                    status = "Racing";
-                else if (entry.FinishTimeSeconds > 0f)
-                    status = $"{ordinal}  {FormatTime(entry.FinishTimeSeconds)}";
+                if (finishLookup.TryGetValue(entry.ClientId, out var rec) && rec.FinishTimeSeconds > 0f)
+                    status = $"Complete  {ordinal}  {FormatTime(rec.FinishTimeSeconds)}";
+                else if (!entry.Finished && !finishLookup.ContainsKey(entry.ClientId))
+                    status = m_allFinished ? "DNF" : "Racing";
                 else
                     status = "DNF";
 
@@ -179,6 +219,14 @@ namespace AdventureMultiplayer
             if (rt == null) return;
             rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, -Screen.height);
             rt.DOAnchorPosY(0f, slideInDuration).SetEase(Ease.OutBack);
+        }
+
+        // Higher = better entry for the same client (finished with time > finished DNF > still racing).
+        private static int EntryScore(RaceEntry e)
+        {
+            if (e.Finished && e.FinishTimeSeconds > 0f) return 2;
+            if (e.Finished) return 1;
+            return 0;
         }
 
         private static string FormatTime(float seconds)

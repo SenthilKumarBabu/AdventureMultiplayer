@@ -5,15 +5,19 @@ namespace AdventureMultiplayer
 {
     /// <summary>
     /// Attach to the player prefab.
-    /// Registers this player's transform with RaceManager on the server so
-    /// real-time distance-based position calculations work between checkpoints.
+    /// Each owner-client sends their world position to the server at a fixed rate so
+    /// the RaceManager always has accurate positions even when NetworkTransform is not
+    /// configured with Owner authority.
     /// </summary>
     [AddComponentMenu("Adventure Multiplayer/Race Player Tracker")]
     public class RacePlayerTracker : NetworkBehaviour
     {
+        [SerializeField] private float positionReportInterval = 0.05f; // 20 reports/second
+
+        private float m_nextReportTime;
+
         public override void OnNetworkSpawn()
         {
-            // Only the server needs to track transforms for position calculation.
             if (!IsServer) return;
 
             if (RaceManager.Instance == null)
@@ -24,6 +28,29 @@ namespace AdventureMultiplayer
 
             RaceManager.Instance.RegisterPlayerTransform(OwnerClientId, transform);
             Debug.Log($"[RacePlayerTracker] Registered client {OwnerClientId} with RaceManager.");
+        }
+
+        private void Update()
+        {
+            if (!IsOwner) return;
+            if (Time.time < m_nextReportTime) return;
+            m_nextReportTime = Time.time + positionReportInterval;
+
+            if (IsServer)
+            {
+                // Host: update directly without going through the network.
+                RaceManager.Instance?.UpdatePlayerPosition(OwnerClientId, transform.position);
+            }
+            else
+            {
+                ReportPositionServerRpc(transform.position);
+            }
+        }
+
+        [ServerRpc(RequireOwnership = true)]
+        private void ReportPositionServerRpc(Vector3 position)
+        {
+            RaceManager.Instance?.UpdatePlayerPosition(OwnerClientId, position);
         }
 
         public override void OnNetworkDespawn()

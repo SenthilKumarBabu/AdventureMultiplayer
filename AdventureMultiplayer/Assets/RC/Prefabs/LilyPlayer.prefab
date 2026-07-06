@@ -11179,7 +11179,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4180447016402789144}
   - component: {fileID: 9119548766168137731}
-  - component: {fileID: 4180447016402789143}
   - component: {fileID: 4180447016402789136}
   - component: {fileID: 4180447016402789146}
   - component: {fileID: 4180447016402789138}
@@ -11211,6 +11210,8 @@ GameObject:
   - component: {fileID: 4499360893901634769}
   - component: {fileID: 850930307478825724}
   - component: {fileID: 625309804145394372}
+  - component: {fileID: 4895068857629343542}
+  - component: {fileID: 1371311589470549451}
   m_Layer: 0
   m_Name: LilyPlayer
   m_TagString: Untagged
@@ -11260,19 +11261,6 @@ MonoBehaviour:
   collisionLayer:
     serializedVersion: 2
     m_Bits: 4294967291
---- !u!114 &4180447016402789143
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4180447016402789145}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b96c8307069affd449e8e956cd9dc68e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  actions: {fileID: -944628639613478452, guid: 6b99b82d3ff7bfd4199643130476cdf4, type: 3}
 --- !u!114 &4180447016402789136
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11732,7 +11720,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1639024817
+  GlobalObjectIdHash: 1048349479
   InScenePlacedSourceGlobalObjectIdHash: 1048349479
   DeferredDespawnTick: 0
   Ownership: 1
@@ -11866,6 +11854,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.RacePlayerTracker
   ShowTopMostFoldoutHeaderGroup: 1
+  positionReportInterval: 0.05
 --- !u!114 &6474422388422972591
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11966,6 +11955,36 @@ MonoBehaviour:
     type: 3}
   decoyBoxPrefab: {fileID: 8524915466210177107, guid: ae5053b86d861fe4a874bd10b72e078d,
     type: 3}
+  rocketProjectilePrefab: {fileID: 3789027560007304932, guid: 548e336ec9cc3584993d516d4af664bd,
+    type: 3}
+  freezeDuration: 10
+  bananaSlipDuration: 10
+--- !u!114 &4895068857629343542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180447016402789145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bfc6c77c098864499af0bb0a6a05a4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SlipAwarePlayerInputManager
+  actions: {fileID: -944628639613478452, guid: 6b99b82d3ff7bfd4199643130476cdf4, type: 3}
+--- !u!114 &1371311589470549451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180447016402789145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bfc6c77c098864499af0bb0a6a05a4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SlipAwarePlayerInputManager
+  actions: {fileID: -944628639613478452, guid: 6b99b82d3ff7bfd4199643130476cdf4, type: 3}
 --- !u!1 &4211856812238732251
 GameObject:
   m_ObjectHideFlags: 0

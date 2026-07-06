@@ -22,7 +22,14 @@ namespace AdventureMultiplayer
             serializer.SerializeValue(ref FinishTimeSeconds);
         }
 
-        public bool Equals(RaceEntry other) => ClientId == other.ClientId;
-        public override int GetHashCode()   => ClientId.GetHashCode();
+        public bool Equals(RaceEntry other) =>
+            ClientId          == other.ClientId          &&
+            CheckpointIndex   == other.CheckpointIndex   &&
+            RacePosition      == other.RacePosition      &&
+            Finished          == other.Finished          &&
+            FinishOrder       == other.FinishOrder       &&
+            FinishTimeSeconds == other.FinishTimeSeconds;
+
+        public override int GetHashCode() => ClientId.GetHashCode();
     }
 }

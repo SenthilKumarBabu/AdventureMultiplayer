@@ -9,22 +9,45 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a689d91966dfb46499fb63f130d9b905, type: 3}
+  m_Script: {fileID: 15024, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: NewPlayModeScenario
   m_EditorClassIdentifier: Unity.Multiplayer.PlayMode.Scenarios.Editor::Unity.Multiplayer.PlayMode.Scenarios.Editor.ScenarioConfig
   m_Description: 
   m_EnableEditors: 1
   m_MainEditorInstance:
-    Name: Editor
-    <CorrespondingNodeId>k__BackingField: 
-    m_Nodes: []
+    Name: Main Editor
+    <CorrespondingNodeId>k__BackingField: Main Editor|0_run
+    m_Nodes:
+    - Main Editor|0_run
+    - Main Editor|0_deploy
+    m_Role: 1
     m_PlayerTag: 
     m_InitialScene: {fileID: 0}
   m_EditorInstances: []
-  m_LocalInstances: []
+  m_LocalInstances:
+  - Name: Instance
+    <CorrespondingNodeId>k__BackingField: Instance - Run
+    m_Nodes:
+    - Instance - Build
+    - Instance - Run
+    m_BuildProfile: {fileID: 11400000, guid: 28770b6359cd3614aa56dfda58084c26, type: 2}
+    m_ServerSettings:
+      DeployMode: 0
+      SimulatorSettings:
+        AutoAllocate: 1
+      CliSettings:
+        UseDefaultArguments: 1
+        Port: 7777
+        QueryProtocol: 0
+        QueryPort: 20000
+    advancedConfiguration:
+      m_StreamLogsToMainEditor: 1
+      m_LogsColor: {r: 0.3643, g: 0.581, b: 0.8679, a: 1}
+      m_LocalArguments: -screen-fullscreen 0 -screen-width 1024 -screen-height 720
+      m_SimulatedArguments: 
+      m_DeviceID: 
+      m_DeviceName: 
   m_RemoteInstances: []
-  m_OverridePort: 0
-  m_Port: 0
   m_MainEditorInstanceObsolete:
     rid: -2
   references:
