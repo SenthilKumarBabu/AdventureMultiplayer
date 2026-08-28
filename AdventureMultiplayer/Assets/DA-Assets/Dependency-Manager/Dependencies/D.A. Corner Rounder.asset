@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14bf7a0e3098f1445bcd963714ac5c84, type: 3}
+  m_Name: D.A. Corner Rounder
+  m_EditorClassIdentifier: 
+  ScriptingDefineSymbol: DACR_EXISTS
+  Strategy: 2
+  Script: {fileID: 0}
+  GeneratedAsmdefName: 
+  GeneratedAsmdefReferences: []
+  GeneratedEditorAsmdefName: 
+  GeneratedEditorAsmdefReferences: []
+  Asmdef: {fileID: 5897886265953266890, guid: a8543565a6048b044bb579d2c50c55d3, type: 3}
+  AssemblyQualifiedTypeName: 
+  ExpectedPathSuffixes: []
+  UnexpectedPathSuffixes: []
+  UpmPackageId: 
+  isEnabled: 1
+  disabledManually: 0
+  lastFoundPath: Assets/DA-Assets/DA-Corner-Rounder/Runtime/DA_Assets.CR.asmdef
+  lastMatchedSource: 2

@@ -42,7 +42,7 @@ MonoBehaviour:
   runningTurningDrag: 14
   canJump: 1
   jumpOnNormalDirection: 0
-  multiJumps: 1
+  multiJumps: 2
   coyoteJumpThreshold: 0.15
   maxJumpHeight: 20.75
   minJumpHeight: 11.5
@@ -151,7 +151,7 @@ MonoBehaviour:
   hurtWaterCoolDown: 0.5
   hurtWaterDrag: 10
   hurtStunRecoverTime: 2
-  canAirDive: 1
+  canAirDive: 0
   applyDiveSlopeFactor: 1
   airDiveForwardForce: 18
   airDiveFriction: 25

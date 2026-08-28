@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: dbe2f3e7ea93fda48947d678287b5ced
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Drawers/Nova/NovaButtonDrawer.cs
+  uploadId: 960946

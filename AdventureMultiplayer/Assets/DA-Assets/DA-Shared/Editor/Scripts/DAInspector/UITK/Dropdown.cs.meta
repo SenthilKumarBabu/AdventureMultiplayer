@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 1c255d328221f2246a34131a46026a85
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Shared/Editor/Scripts/DAInspector/UITK/Dropdown.cs
+  uploadId: 960946

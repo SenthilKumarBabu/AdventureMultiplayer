@@ -26,6 +26,15 @@ namespace AdventureMultiplayer
         // same player (Body, Stomp Hitbox, root) don't send duplicate RPCs.
         private readonly System.Collections.Generic.HashSet<ulong> m_passedOwners = new();
 
+        // Lets RaceManager.SwapCheckpoints un-dedupe an owner after rewinding their tracked
+        // checkpoint index backward (a Swap teleporting them behind the checkpoints they'd
+        // already passed). Without this, m_passedOwners permanently remembers them as having
+        // crossed this checkpoint from their FIRST pass, so physically walking through it again
+        // — which they now need to do, since RaceManager thinks their progress is back before
+        // it — is silently swallowed here and never resent, leaving their tracked race position
+        // stuck below where they actually are forever.
+        public void ClearPassed(ulong ownerId) => m_passedOwners.Remove(ownerId);
+
         private void OnTriggerEnter(Collider other)
         {
             Debug.Log($"[Checkpoint {index}] OnTriggerEnter: '{other.gameObject.name}' tag={other.tag}");
@@ -33,6 +42,13 @@ namespace AdventureMultiplayer
             if (RaceManager.Instance == null)
             {
                 Debug.LogWarning($"[Checkpoint {index}] RaceManager.Instance is null — skipped.");
+                return;
+            }
+
+            // AI bots are handled by RaceBotBrain via proximity — skip the trigger path for them.
+            if (other.GetComponentInParent<RaceBotBrain>() != null)
+            {
+                Debug.Log($"[Checkpoint {index}] Skipped — RaceBotBrain handles bot checkpoints directly.");
                 return;
             }
 

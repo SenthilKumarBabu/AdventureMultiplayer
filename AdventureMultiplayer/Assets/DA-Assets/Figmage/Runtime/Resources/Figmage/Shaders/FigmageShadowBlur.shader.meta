@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: a0122d02cf9eb7144bbde43597d7cbbe
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Figmage/Runtime/Resources/Figmage/Shaders/FigmageShadowBlur.shader
+  uploadId: 960946

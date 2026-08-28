@@ -6,6 +6,8 @@ namespace AdventureMultiplayer
     /// <summary>
     /// Applied to a player when they are hit by StunBolt, Freeze, or DecoyBox.
     /// Zeros lateral and vertical velocity each LateUpdate for the stun duration.
+    /// Also sets animator.speed = 0 so the character pose is frozen while stunned,
+    /// and restores it to 1 when the stun expires.
     /// Also clears AI input if an AIPlayerInputManager is present.
     /// Add to every player prefab.
     /// </summary>
@@ -17,6 +19,7 @@ namespace AdventureMultiplayer
 
         private Player               _player;
         private AIPlayerInputManager _aiInput;
+        private Animator             _animator;
         private bool                 _stunned;
         private float                _endTime;
 
@@ -24,6 +27,9 @@ namespace AdventureMultiplayer
         {
             _player  = GetComponent<Player>();
             _aiInput = GetComponent<AIPlayerInputManager>();
+
+            var pa = GetComponent<PlayerAnimator>();
+            _animator = pa != null ? pa.animator : GetComponentInChildren<Animator>();
         }
 
         /// <summary>Activate stun for <paramref name="duration"/> seconds. Safe to call multiple times — refreshes.</summary>
@@ -31,6 +37,10 @@ namespace AdventureMultiplayer
         {
             _stunned = true;
             _endTime = Time.time + duration;
+
+            if (_animator != null)
+                _animator.speed = 0f;
+
             Debug.Log($"[StunEffect] {name} stunned for {duration}s.");
         }
 
@@ -41,6 +51,8 @@ namespace AdventureMultiplayer
             if (Time.time >= _endTime)
             {
                 _stunned = false;
+                if (_animator != null)
+                    _animator.speed = 1f;
                 return;
             }
 

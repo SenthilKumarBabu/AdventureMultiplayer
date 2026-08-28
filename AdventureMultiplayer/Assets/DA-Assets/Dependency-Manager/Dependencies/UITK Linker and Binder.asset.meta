@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 70f1348fc433541419f3cf763b0b3d56
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Dependency-Manager/Dependencies/UITK Linker and Binder.asset
+  uploadId: 960946

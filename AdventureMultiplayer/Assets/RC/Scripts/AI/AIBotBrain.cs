@@ -81,7 +81,7 @@ namespace AdventureMultiplayer
         [SerializeField] private float stompDetectRange = 6f;
         [SerializeField] private float dashMinDistance  = 10f;
         [SerializeField] private float dashCooldown     = 3f;
-        [SerializeField] private float airDiveMinYDiff  = 4f;
+        [SerializeField] private float highJumpMinYDiff  = 4f;
         [SerializeField] private float rollMinDistance  = 12f;
         [SerializeField] private float pickupRange      = 2.5f;
         [SerializeField] private float crouchCeilHeight = 1.3f;
@@ -1357,7 +1357,7 @@ namespace AdventureMultiplayer
             HandleSpin();
             HandleStomp();
             HandleDash();
-            HandleAirDive();
+            HandleHighJump();
             HandleCrouch();
             HandleRoll();
             HandlePickAndDrop();
@@ -1466,24 +1466,24 @@ namespace AdventureMultiplayer
             Debug.Log($"[AIBot] Dash toward '{dtarget}' (dist={dist:F1})");
         }
 
-        /// <summary>Air dive when well above target and not gliding.</summary>
-        private void HandleAirDive()
+        /// <summary>High jump when well below target and not gliding.</summary>
+        private void HandleHighJump()
         {
             if (m_self.holding) return;
             if (m_self.isGrounded) return;
             if (m_input.glideHeld) return;
             if (m_target == null) return;
 
-            float yDiff = transform.position.y - m_target.transform.position.y;
-            if (yDiff >= airDiveMinYDiff)
+            float yDiff = m_target.transform.position.y - transform.position.y;
+            if (yDiff >= highJumpMinYDiff)
             {
                 m_input.airDiveQueued = true;
                 if (Time.time > m_lastAbilityLogTime + k_abilityLogInterval)
                 {
                     m_lastAbilityLogTime = Time.time;
                     string atarget = GetCurrentTargetName();
-                    BrainLog(AILogType.Ability, $"Air dive toward '{atarget}' (yDiff={yDiff:F1})");
-                    Debug.Log($"[AIBot] Air dive toward '{atarget}' (yDiff={yDiff:F1})");
+                    BrainLog(AILogType.Ability, $"High jump toward '{atarget}' (yDiff={yDiff:F1})");
+                    Debug.Log($"[AIBot] High jump toward '{atarget}' (yDiff={yDiff:F1})");
                 }
             }
         }

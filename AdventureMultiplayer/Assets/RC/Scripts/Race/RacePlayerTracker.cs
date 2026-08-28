@@ -18,6 +18,14 @@ namespace AdventureMultiplayer
 
         public override void OnNetworkSpawn()
         {
+            // AI bots register themselves via RaceBotBrain — skip this component on bot prefabs
+            // so multiple server-owned bots (all OwnerClientId=0) don't overwrite each other.
+            if (GetComponent<RaceBotBrain>() != null)
+            {
+                enabled = false;
+                return;
+            }
+
             if (!IsServer) return;
 
             if (RaceManager.Instance == null)

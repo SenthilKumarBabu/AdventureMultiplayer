@@ -22,6 +22,9 @@ namespace AdventureMultiplayer
         [Tooltip("The solid CapsuleCollider child that other players collide against.")]
         [SerializeField] private CapsuleCollider bodyCollider;
 
+        /// <summary>The solid collider other players' EntityControllers detect. Used by Invisible to toggle pass-through.</summary>
+        public CapsuleCollider BodyCollider => bodyCollider;
+
         private void Start()
         {
             if (bodyCollider == null)

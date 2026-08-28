@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 4be28e9a8f7689d4483e6afe6878cf9d
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Drawers/UGUI/AutoLayout/HorLayoutDrawer.cs
+  uploadId: 960946

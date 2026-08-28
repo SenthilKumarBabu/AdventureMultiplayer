@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 5fe28e239890a9b4ba6b2aa71b6a3572
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Editor/Scripts/Tabs/TextFontsTab.TextMeshPro.cs
+  uploadId: 960946

@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: DefaultCompany
-  productName: AdventureMultiplayer
+  productName: AdventureMultiplayer (Client)
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -743,7 +743,7 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
-    Android: UNITY_POST_PROCESSING_STACK_V2;DOTWEEN;APP_UI_EDITOR_ONLY
+    Android: APP_UI_EDITOR_ONLY;DACR_EXISTS;DAG_EXISTS;DA_UI_COMPONENTS_EXISTS;DOTWEEN;FCU_EXISTS;IMAGE_OVERFLOW_EXISTS;JSONNET_EXISTS;SENTIS_ANALYTICS_ENABLED;TextMeshPro;U2D_SPRITE_EXISTS;UITK_EXISTS;UNITY_POST_PROCESSING_STACK_V2
     EmbeddedLinux: UNITY_POST_PROCESSING_STACK_V2;DOTWEEN
     GameCoreScarlett: UNITY_POST_PROCESSING_STACK_V2;DOTWEEN
     GameCoreXboxOne: UNITY_POST_PROCESSING_STACK_V2;DOTWEEN

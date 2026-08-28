@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b83fd04c2e159654595ca39c033c8619
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Figmage/Runtime/Resources/Figmage/Shaders/FigmageShadowComposite.shader
+  uploadId: 960946

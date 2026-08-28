@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b1db78d4e91a4f128d9b8775670a3c11
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Dependency-Manager/Dependencies/Image Overflow.asset
+  uploadId: 960946

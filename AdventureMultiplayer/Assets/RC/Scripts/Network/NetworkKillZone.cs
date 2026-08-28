@@ -33,6 +33,18 @@ namespace AdventureMultiplayer
             if (player == null)
                 return;
 
+            // A checkpoint/spawn point can sit close enough to a kill zone that respawning
+            // teleports the player straight back into this trigger, re-firing OnTriggerEnter
+            // and killing them again before they can move — an infinite death loop that looks
+            // like the player/bot is permanently "stuck". The brief post-respawn grace window
+            // gives them a chance to step clear first.
+            var respawner = other.GetComponentInParent<NetworkRespawner>();
+            if (respawner != null && respawner.IsRespawnProtected)
+            {
+                Debug.Log($"[NetworkKillZone] '{player.name}' is respawn-protected — kill zone ignored.");
+                return;
+            }
+
             Debug.Log($"[NetworkKillZone] Player '{player.name}' entered kill zone.");
             player.Die();
             player.states.Change<DiePlayerState>();

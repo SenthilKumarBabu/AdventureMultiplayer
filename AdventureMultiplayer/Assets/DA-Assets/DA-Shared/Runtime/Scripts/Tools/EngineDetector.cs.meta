@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 0620750eeaa41ed4d85d673d18f29281
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Shared/Runtime/Scripts/Tools/EngineDetector.cs
+  uploadId: 960946

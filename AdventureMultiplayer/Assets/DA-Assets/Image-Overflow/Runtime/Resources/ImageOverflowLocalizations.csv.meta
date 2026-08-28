@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e416cd7f2f284e02b35398af6b8060cb
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Image-Overflow/Runtime/Resources/ImageOverflowLocalizations.csv
+  uploadId: 960946

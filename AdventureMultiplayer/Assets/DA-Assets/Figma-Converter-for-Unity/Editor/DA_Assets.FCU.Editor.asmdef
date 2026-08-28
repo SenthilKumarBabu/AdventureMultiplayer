@@ -1,0 +1,22 @@
+{
+    "name": "DA_Assets.FCU.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:fd2d248e310f8234eb351b83126b632e",
+        "GUID:2fe6a68d68d3dd54a8071f1f334dcbd1",
+        "GUID:d99cf7b1717f445eb23c07d8b5125291",
+        "GUID:1b74e700d4693d342a6732b0ca624858",
+        "GUID:a6cf5be64ada0d14782980ee615220ef"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

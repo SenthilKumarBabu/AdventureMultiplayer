@@ -8,7 +8,7 @@ namespace AdventureMultiplayer
     /// Server-spawned trap. Player who placed it is immune.
     /// Any other player that walks through the trigger collider gets the SlipEffect applied
     /// on their owner client via PlayerPowerUpInventory.ApplySlipClientRpc.
-    /// Invincibility blocks the slip.
+    /// Invisible blocks the slip.
     ///
     /// Requires: NetworkObject, trigger Collider, MeshRenderer.
     /// Register this prefab in NetworkManager's NetworkPrefabs list.
@@ -19,15 +19,17 @@ namespace AdventureMultiplayer
     {
         [SerializeField] private float lifetime = 15f;
 
-        private ulong _ownerClientId;
+        // Caster's NetworkObjectId — NOT OwnerClientId, which is not unique for bots
+        // (every server-owned bot defaults to OwnerClientId 0).
+        private ulong _ownerNetworkObjectId;
         private float _slipDuration;
         private bool  _triggered;
 
         /// <summary>Called by PlayerPowerUpInventory right after Spawn().</summary>
-        public void Init(ulong ownerClientId, float slipDuration)
+        public void Init(ulong ownerNetworkObjectId, float slipDuration)
         {
-            _ownerClientId = ownerClientId;
-            _slipDuration  = slipDuration;
+            _ownerNetworkObjectId = ownerNetworkObjectId;
+            _slipDuration         = slipDuration;
         }
 
         public override void OnNetworkSpawn()
@@ -53,29 +55,45 @@ namespace AdventureMultiplayer
             var netObj = other.GetComponentInParent<NetworkObject>();
             if (netObj == null || other.GetComponentInParent<Player>() == null) return;
 
-            ulong hitterId = netObj.OwnerClientId;
+            // Immune to own peel — compare by NetworkObjectId, not OwnerClientId (bots
+            // all share OwnerClientId 0, which would make every bot immune to every
+            // other bot's peel too).
+            if (netObj.NetworkObjectId == _ownerNetworkObjectId) return;
 
-            // Immune to own peel
-            if (hitterId == _ownerClientId) return;
-
-            // Invincibility blocks slip
+            // Invisible blocks the slip (both the damage-immunity and pass-through halves apply).
             var health = netObj.GetComponent<NetworkedHealth>();
-            if (health != null && health.IsInvincible)
+            var inv    = netObj.GetComponent<PlayerPowerUpInventory>();
+            if (health != null && health.IsInvisible)
             {
-                Debug.Log($"[BananaPeel] Slip blocked by invincibility on client {hitterId}.");
+                Debug.Log($"[BananaPeel] '{netObj.name}' phased through the banana peel (Invisible).");
+                if (inv != null)
+                {
+                    ClientRpcParams pDodge = new ClientRpcParams
+                    {
+                        Send = new ClientRpcSendParams { TargetClientIds = new[] { netObj.OwnerClientId } }
+                    };
+                    inv.NotifyPowerUpAffectedClientRpc((int)PowerUpType.Banana, (int)PowerUpAffectOutcome.InvisibleDodged, pDodge);
+
+                    if (PlayerPowerUpInventory.All.TryGetValue(_ownerNetworkObjectId, out var dodgeAttackerInv))
+                        inv.NotifyGlobalAttackClientRpc(dodgeAttackerInv.RaceId, inv.RaceId, (int)PowerUpType.Banana, (int)PowerUpAffectOutcome.InvisibleDodged);
+                }
                 return;
             }
 
             _triggered = true;
-            Debug.Log($"[BananaPeel] Client {hitterId} slipped! ({_slipDuration}s)");
+            Debug.Log($"[BananaPeel] '{netObj.name}' slipped! ({_slipDuration}s)");
 
-            if (PlayerPowerUpInventory.All.TryGetValue(hitterId, out var inv))
+            if (inv != null)
             {
                 ClientRpcParams p = new ClientRpcParams
                 {
-                    Send = new ClientRpcSendParams { TargetClientIds = new[] { hitterId } }
+                    Send = new ClientRpcSendParams { TargetClientIds = new[] { netObj.OwnerClientId } }
                 };
                 inv.ApplySlipClientRpc(_slipDuration, p);
+                inv.NotifyPowerUpAffectedClientRpc((int)PowerUpType.Banana, (int)PowerUpAffectOutcome.Hit, p);
+
+                if (PlayerPowerUpInventory.All.TryGetValue(_ownerNetworkObjectId, out var attackerInv))
+                    inv.NotifyGlobalAttackClientRpc(attackerInv.RaceId, inv.RaceId, (int)PowerUpType.Banana, (int)PowerUpAffectOutcome.Hit);
             }
 
             GetComponent<NetworkObject>().Despawn();

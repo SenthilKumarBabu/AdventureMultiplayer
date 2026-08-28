@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: e69a84288a3f387419efa96e49ed345a
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Shared/Editor/Scripts/Tools/SerializedFieldSorter.cs
+  uploadId: 960946

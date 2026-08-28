@@ -25,6 +25,10 @@ namespace AdventureMultiplayer
         [SerializeField] private ObstacleType              obstacleType      = ObstacleType.Triangle;
         [SerializeField] private ObstacleKnockbackDatabase database;
 
+        /// <summary>Read-only access for external systems (e.g. RaceBotBrain) that need to know
+        /// what kind of hazard this is without triggering the knockback itself.</summary>
+        public ObstacleType Type => obstacleType;
+
         // When true, ignores auto-computed direction and uses customDirection instead.
         // Use for HorizontalPusher, Laser, and any obstacle whose push direction
         // cannot be derived from surface velocity or pivot→player.
@@ -106,6 +110,12 @@ namespace AdventureMultiplayer
             if (!player.isAlive)
             {
                 Debug.Log($"[ObstacleKnockback] {name} ({source}): player not alive — skipped");
+                return;
+            }
+
+            if (player.TryGetComponent<NetworkedHealth>(out var health) && health.IsInvisible)
+            {
+                Debug.Log($"[ObstacleKnockback] {name} ({source}): player Invisible — passed through");
                 return;
             }
 

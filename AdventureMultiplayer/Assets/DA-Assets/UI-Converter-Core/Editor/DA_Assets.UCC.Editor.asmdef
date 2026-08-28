@@ -1,0 +1,30 @@
+{
+    "name": "DA_Assets.UCC.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:fd2d248e310f8234eb351b83126b632e",
+        "GUID:8c42ea1385094118b2cd7f5acd8af412",
+        "GUID:f16cd179abd240bebe4659ccc0c3ea77",
+        "GUID:a6cf5be64ada0d14782980ee615220ef",
+        "GUID:1b74e700d4693d342a6732b0ca624858",
+        "GUID:3f2527220f3101d41befe04ed02d001f",
+        "GUID:18f4a329dd82a544b9708a339d2ef8c9",
+        "GUID:2c573e6b271651846a79655161004c5b",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:d70858b2765411543acab1db1434d52c",
+        "GUID:f9cd9e9bba6388d4b905abfb8656e75e",
+        "GUID:6572381e8157783499bf6ce8f56b9292",
+        "GUID:9d3b246372b3cc3478707b598de1f154"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

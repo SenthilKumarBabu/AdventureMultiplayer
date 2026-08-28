@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 6501dde00edfa4d4bac2a7ab78c2e775
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Shared/Runtime/Scripts/Tools/ParallelGaussianBlur.cs
+  uploadId: 960946

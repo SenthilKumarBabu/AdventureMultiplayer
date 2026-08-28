@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 91d4cb628f6b4d409c2e9a4d7b8f3a21
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Api/Figma/FigmaEndpoints.cs
+  uploadId: 960946

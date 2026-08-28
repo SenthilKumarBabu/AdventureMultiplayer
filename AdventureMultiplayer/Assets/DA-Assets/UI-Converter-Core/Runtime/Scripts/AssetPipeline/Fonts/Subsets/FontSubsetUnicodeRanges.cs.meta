@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 907f37d1b37711c468feec5688801e3e
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/AssetPipeline/Fonts/Subsets/FontSubsetUnicodeRanges.cs
+  uploadId: 960946

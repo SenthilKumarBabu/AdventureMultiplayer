@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: d6e72459fb116994982784dcf867b8d6
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Editor/Scripts/Windows/LineHeightAdjusterWindowBase.cs
+  uploadId: 960946

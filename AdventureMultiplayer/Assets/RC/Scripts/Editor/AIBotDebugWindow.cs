@@ -299,7 +299,7 @@ public class AIBotDebugWindow : EditorWindow
         DrawAbilityPill("Spin",    inp.spinQueued);
         DrawAbilityPill("Stomp",   inp.stompQueued);
         DrawAbilityPill("Dash",    inp.dashQueued);
-        DrawAbilityPill("AirDive", inp.airDiveQueued);
+        DrawAbilityPill("HighJump", inp.airDiveQueued);
         DrawAbilityPill("Jump",    inp.jumpQueued);
         DrawAbilityPill("P&D",     inp.pickAndDropQueued);
         EditorGUILayout.EndHorizontal();

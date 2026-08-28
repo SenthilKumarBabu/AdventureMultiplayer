@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8958357d8b8d9084f81f350ec5364699, type: 3}
+  m_Name: Figma Converter MCP
+  m_EditorClassIdentifier: 
+  DisplayName: Figma Converter for Unity
+  EndpointPath: fcu
+  Instructions: "Before using FCU tools, read fcu://instances. If there is more than
+    one FigmaConverterUnity instance, ask the user which one to use, then call select_fcu_instance
+    with the selected instance id. Continue all FCU work with that selected instance.\n\nImport
+    flow:\n1. set_project_url\n2. download_project\n3. read fcu://frame-list
+    and follow the returned frame-selection instructions\n4. select_frames\n5.
+    start_import_step with {\"step_index\": 0}\n6. If start_import_step returns
+    pause_reason=SpriteDuplicateRemover, show the returned user_message to the user
+    in their language. Do not show internal action names, JSON field names, or a command
+    list. Interpret their answer: use sprite_duplicate_resolution=apply_default for
+    the default selection, sprite_duplicate_resolution=keep_all_duplicates to keep
+    duplicates, or wait for the user to finish manual selection in Unity and then continue
+    with next_step while omitting sprite_duplicate_resolution.\n7. If start_import_step
+    returns requires_user_action=true for any other reason, wait for the user to finish
+    the Unity window, then call start_import_step with the returned next_step. Repeat
+    until the import is completed."
+  McpTools:
+  - {fileID: 11400000, guid: c1d2e3f4a5b6789012345678cdef0018, type: 2}
+  - {fileID: 11400000, guid: c1d2e3f4a5b6789012345678cdef0019, type: 2}
+  - {fileID: 11400000, guid: c1d2e3f4a5b6789012345678cdef0013, type: 2}
+  - {fileID: 11400000, guid: c1d2e3f4a5b6789012345678cdef0017, type: 2}
+  - {fileID: 11400000, guid: c1d2e3f4a5b6789012345678cdef0014, type: 2}
+  - {fileID: 11400000, guid: f7a9b1c2d3e4567890abcdef12345683, type: 2}
+  - {fileID: 11400000, guid: c1d2e3f4a5b6789012345678cdef0015, type: 2}
+  - {fileID: 11400000, guid: c1d2e3f4a5b6789012345678cdef0012, type: 2}
+  - {fileID: 11400000, guid: c1d2e3f4a5b6789012345678cdef0016, type: 2}
+  - {fileID: 11400000, guid: afe10614a552471e824aa61175e116bd, type: 2}
+  - {fileID: 11400000, guid: f7a9b1c2d3e4567890abcdef12345696, type: 2}
+  - {fileID: 11400000, guid: f7a9b1c2d3e4567890abcdef12345697, type: 2}
+  - {fileID: 11400000, guid: f7a9b1c2d3e4567890abcdef12345698, type: 2}
+  - {fileID: 11400000, guid: f7a9b1c2d3e4567890abcdef12345702, type: 2}
+  McpResources:
+  - {fileID: 11400000, guid: 5ec64911ee4947fbaae3f75b23ab9d19, type: 2}
+  - {fileID: 11400000, guid: 0312d6b0ed304bd8b1f6148f43e4e0d5, type: 2}
+  _debug: 0

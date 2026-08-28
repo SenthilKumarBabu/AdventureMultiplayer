@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 26d12169f24447e45a7f1b508b16073e
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Drawers/Nova/NovaAutoLayoutDrawer.cs
+  uploadId: 960946

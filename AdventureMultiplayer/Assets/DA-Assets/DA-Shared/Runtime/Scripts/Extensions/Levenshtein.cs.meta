@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: c48acc25efb6e1b48a99548fe4264b03
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Shared/Runtime/Scripts/Extensions/Levenshtein.cs
+  uploadId: 960946

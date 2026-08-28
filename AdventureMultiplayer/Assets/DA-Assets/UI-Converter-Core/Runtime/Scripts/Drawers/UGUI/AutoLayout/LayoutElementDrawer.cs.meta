@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 01f2d41f57c794b44a6bad6482d42e05
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Drawers/UGUI/AutoLayout/LayoutElementDrawer.cs
+  uploadId: 960946

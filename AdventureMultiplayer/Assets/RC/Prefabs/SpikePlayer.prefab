@@ -16349,6 +16349,7 @@ GameObject:
   - component: {fileID: 5331931935712284443}
   - component: {fileID: 9211339801267767058}
   - component: {fileID: 1835904839701793813}
+  - component: {fileID: 7150603545226861962}
   m_Layer: 0
   m_Name: SpikePlayer
   m_TagString: Untagged
@@ -16447,7 +16448,7 @@ MonoBehaviour:
   - PLAYERTWO.PlatformerProject.CrouchPlayerState
   - PLAYERTWO.PlatformerProject.CrawlingPlayerState
   - PLAYERTWO.PlatformerProject.SpinPlayerState
-  - AdventureMultiplayer.SpikeAirDiveState
+  - AdventureMultiplayer.SpikeHighJumpState
   - PLAYERTWO.PlatformerProject.StompPlayerState
   - PLAYERTWO.PlatformerProject.LedgeHangingPlayerState
   - PLAYERTWO.PlatformerProject.LedgeClimbingPlayerState
@@ -17019,7 +17020,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38db695944ac35c4ba48cea69d975354, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SpikeCooldown
-  _cooldownSeconds: 1.5
+  _cooldownSeconds: 4
 --- !u!114 &3524492323247077959
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17090,6 +17091,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac001b251903e9f43b2c8bac58a9df56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SlipEffect
+  slideSpeed: 10
 --- !u!114 &5331931935712284443
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17110,6 +17112,7 @@ MonoBehaviour:
   rocketProjectilePrefab: {fileID: 3789027560007304932, guid: 548e336ec9cc3584993d516d4af664bd,
     type: 3}
   freezeDuration: 10
+  bananaSlipDuration: 2
 --- !u!114 &9211339801267767058
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17136,6 +17139,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SlipAwarePlayerInputManager
   actions: {fileID: -944628639613478452, guid: 6b99b82d3ff7bfd4199643130476cdf4, type: 3}
+--- !u!114 &7150603545226861962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180447016402789145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 056b713ecb852f3419d1fbf1a324a168, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.InvisibilityEffect
+  glassMaterial: {fileID: 2100000, guid: 300be848849c54b40b6464ccc1849f26, type: 2}
 --- !u!1 &4275279675673152213
 GameObject:
   m_ObjectHideFlags: 0

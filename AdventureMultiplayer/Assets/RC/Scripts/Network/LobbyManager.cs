@@ -16,9 +16,11 @@ using System.Collections.Generic;
 
 namespace AdventureMultiplayer
 {
+
     [AddComponentMenu("Adventure Multiplayer/Lobby Manager")]
     public class LobbyManager : MonoBehaviour
     {
+       
         private const int MinPlayersToStart = 1;
         private const int MaxConnections     = 3;
 
@@ -58,6 +60,12 @@ namespace AdventureMultiplayer
         [SerializeField] private Button level3Button;
         [SerializeField] private Button level4Button;
 
+        [Header("Bots")]
+        [SerializeField] private Toggle botsEnabledToggle;
+        [SerializeField] private Button easyDifficultyButton;
+        [SerializeField] private Button mediumDifficultyButton;
+        [SerializeField] private Button hardDifficultyButton;
+
         [Header("Scene")]
         [SerializeField] private string gameplaySceneName = "DeathRunL1";
 
@@ -80,6 +88,12 @@ namespace AdventureMultiplayer
             if (level3Button != null) level3Button.onClick.AddListener(() => SelectLevel("DeathRunL3",  2));
             if (level4Button != null) level4Button.onClick.AddListener(() => SelectLevel("ObstacleL1",  3));
 
+            if (botsEnabledToggle  != null) botsEnabledToggle.onValueChanged.AddListener(OnBotsEnabledChanged);
+
+            if (easyDifficultyButton   != null) easyDifficultyButton.onClick.AddListener(() => SelectBotDifficulty(BotDifficulty.Easy));
+            if (mediumDifficultyButton != null) mediumDifficultyButton.onClick.AddListener(() => SelectBotDifficulty(BotDifficulty.Medium));
+            if (hardDifficultyButton   != null) hardDifficultyButton.onClick.AddListener(() => SelectBotDifficulty(BotDifficulty.Hard));
+
             // Hide everything that appears only after connecting
             startButton.gameObject.SetActive(false);
             if (readyButton          != null) readyButton.gameObject.SetActive(false);
@@ -90,6 +104,10 @@ namespace AdventureMultiplayer
             if (characterTabButton   != null) characterTabButton.gameObject.SetActive(false);
             if (levelTabContent      != null) levelTabContent.SetActive(false);
             if (characterTabContent  != null) characterTabContent.SetActive(false);
+            if (botsEnabledToggle    != null) botsEnabledToggle.gameObject.SetActive(false);
+            if (easyDifficultyButton   != null) easyDifficultyButton.gameObject.SetActive(false);
+            if (mediumDifficultyButton != null) mediumDifficultyButton.gameObject.SetActive(false);
+            if (hardDifficultyButton   != null) hardDifficultyButton.gameObject.SetActive(false);
 
             SetStatus("Choose Host or Join");
             SetPlayerCount(0);
@@ -211,6 +229,7 @@ namespace AdventureMultiplayer
             NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.StartClient();
+            CharacterPicker.Instance?.RegisterClientHandler();
             RegisterReadyHandlers();
 
             SetStatus("Connecting…");
@@ -225,6 +244,11 @@ namespace AdventureMultiplayer
                 RefreshPlayerCount();
                 m_readySet.Clear();
                 BroadcastReadyCount();
+
+                // Late joiners otherwise never learn about players who picked before they
+                // connected (only future picks get broadcast) — send them the full roster.
+                if (clientId != NetworkManager.Singleton.LocalClientId)
+                    CharacterPicker.Instance?.SendRosterTo(clientId);
             }
             else
             {
@@ -369,6 +393,23 @@ namespace AdventureMultiplayer
                 // Default level selection
                 SelectLevel(gameplaySceneName, GetLevelIndex(gameplaySceneName));
                 ShowTab(true);
+
+                // Bot on/off is a server-side spawn decision — only the host sets it. Bot
+                // COUNT is no longer host-configurable — BotSpawner calculates it from the
+                // room size and connected human count.
+                if (botsEnabledToggle != null)
+                {
+                    botsEnabledToggle.gameObject.SetActive(true);
+                    botsEnabledToggle.isOn = BotSettings.Instance == null || BotSettings.Instance.BotsEnabled;
+                }
+                if (easyDifficultyButton != null || mediumDifficultyButton != null || hardDifficultyButton != null)
+                {
+                    bool botsOn = botsEnabledToggle == null || botsEnabledToggle.isOn;
+                    if (easyDifficultyButton   != null) { easyDifficultyButton.gameObject.SetActive(true);   easyDifficultyButton.interactable   = botsOn; }
+                    if (mediumDifficultyButton != null) { mediumDifficultyButton.gameObject.SetActive(true); mediumDifficultyButton.interactable = botsOn; }
+                    if (hardDifficultyButton   != null) { hardDifficultyButton.gameObject.SetActive(true);   hardDifficultyButton.interactable   = botsOn; }
+                    SelectBotDifficulty(BotSettings.Instance != null ? BotSettings.Instance.Difficulty : BotDifficulty.Medium);
+                }
             }
             else
             {
@@ -416,13 +457,40 @@ namespace AdventureMultiplayer
             m_selectedLevelDisplay = displayIndex >= 0 && displayIndex < k_levelNames.Length
                 ? k_levelNames[displayIndex] : "Level 1";
 
-            HighlightLevelButton(level1Button, displayIndex == 0);
-            HighlightLevelButton(level2Button, displayIndex == 1);
-            HighlightLevelButton(level3Button, displayIndex == 2);
-            HighlightLevelButton(level4Button, displayIndex == 3);
+            HighlightButton(level1Button, displayIndex == 0);
+            HighlightButton(level2Button, displayIndex == 1);
+            HighlightButton(level3Button, displayIndex == 2);
+            HighlightButton(level4Button, displayIndex == 3);
 
             UpdateSummary();
             Debug.Log($"[LobbyManager] Level selected: {sceneName}");
+        }
+
+        // ── Bot settings ──────────────────────────────────────────────────────
+
+        private void OnBotsEnabledChanged(bool value)
+        {
+            if (BotSettings.Instance == null)
+            {
+                Debug.LogError("[LobbyManager] BotSettings not found in scene — bot toggle has no effect.");
+                return;
+            }
+            BotSettings.Instance.SetBotsEnabled(value);
+            if (easyDifficultyButton   != null) easyDifficultyButton.interactable   = value;
+            if (mediumDifficultyButton != null) mediumDifficultyButton.interactable = value;
+            if (hardDifficultyButton   != null) hardDifficultyButton.interactable   = value;
+            Debug.Log($"[LobbyManager] Bots enabled: {value}");
+        }
+
+        private void SelectBotDifficulty(BotDifficulty difficulty)
+        {
+            BotSettings.Instance?.SetDifficulty(difficulty);
+
+            HighlightButton(easyDifficultyButton,   difficulty == BotDifficulty.Easy);
+            HighlightButton(mediumDifficultyButton, difficulty == BotDifficulty.Medium);
+            HighlightButton(hardDifficultyButton,   difficulty == BotDifficulty.Hard);
+
+            Debug.Log($"[LobbyManager] Bot difficulty: {difficulty}");
         }
 
         private static int GetLevelIndex(string sceneName) => sceneName switch
@@ -433,7 +501,7 @@ namespace AdventureMultiplayer
             _            => 0,
         };
 
-        private static void HighlightLevelButton(Button btn, bool selected)
+        private static void HighlightButton(Button btn, bool selected)
         {
             if (btn == null) return;
             var img = btn.GetComponent<Image>();

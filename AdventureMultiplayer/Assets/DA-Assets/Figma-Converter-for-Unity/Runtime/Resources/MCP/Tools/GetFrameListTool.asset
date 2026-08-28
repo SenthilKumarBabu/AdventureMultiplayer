@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6789012345678abcdef04, type: 3}
+  m_Name: GetFrameListTool
+  m_EditorClassIdentifier: 
+  ToolName: get_frame_list
+  ToolDescription: Returns loaded pages/frames as a readable hierarchy plus a parse-friendly
+    table with IDs.
+  InstanceTypeName: DA_Assets.FCU.FigmaConverterUnity
+  InstanceLabel: FCU
+  Schema:
+    Type: object
+    Properties:
+      m_Keys: []
+      m_Values: []
+      rowCount: 1
+    Required: []
+  ResponseTemplates:
+    m_Keys:
+    - empty
+    - instruction
+    - hierarchy_prefix
+    - agent_data_prefix
+    m_Values:
+    - No frames found. Make sure the project is downloaded (set_project_url -> download_project).
+    - 'You have received the project contents.
+
+      Provide this information to
+      the user, stop, and wait for the user to choose which frames to import: the
+      entire project, specific pages, or individual frames.'
+    - 'Hierarchy (names only):'
+    - 'Agent data (IDs hidden from user):'
+    rowCount: 3

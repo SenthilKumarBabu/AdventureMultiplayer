@@ -18,7 +18,7 @@ namespace AdventureMultiplayer
         [SerializeField] private TextMeshProUGUI   abilityLabel;
 
         private static readonly string[] CharacterNames   = { "Gale", "Blaze", "Bolt", "Bruno", "Spike" };
-        private static readonly string[] CharacterAbility = { "Glider", "Dash", "Sprinter", "Roller", "Air Dive" };
+        private static readonly string[] CharacterAbility = { "Glider", "Dash", "Sprinter", "Roller", "High Jump" };
 
         public event System.Action<int> CharacterChanged;
 

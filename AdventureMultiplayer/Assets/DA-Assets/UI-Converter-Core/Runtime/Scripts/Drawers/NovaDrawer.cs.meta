@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 10cc1bea77caee14796c3749aab14a81
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Drawers/NovaDrawer.cs
+  uploadId: 960946

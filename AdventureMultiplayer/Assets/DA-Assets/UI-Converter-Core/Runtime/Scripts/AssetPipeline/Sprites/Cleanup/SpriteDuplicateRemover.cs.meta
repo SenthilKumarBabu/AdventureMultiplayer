@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: d696b8b8ae6e71849b0f3770a4d05386
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/AssetPipeline/Sprites/Cleanup/SpriteDuplicateRemover.cs
+  uploadId: 960946

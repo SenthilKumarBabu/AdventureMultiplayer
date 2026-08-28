@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 162cda691aeb6ac4893cadb5abdb7b9f
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/App/Setters/TagSetter.cs
+  uploadId: 960946

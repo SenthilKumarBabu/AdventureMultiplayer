@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk -F: '$1>567')",
+      "Bash(awk -F: '\\($1>=4421 && $1<=4638\\) || \\($1>=5008 && $1<=5207\\)')",
+      "Bash(awk 'NR==4421,NR==4638' \"C:/Users/Admin/AppData/Local/Unity/Editor/Editor.log\")",
+      "Bash(awk -F: '$1>=1')",
+      "Bash(awk 'NR==41955,NR==42036' Assets/RC/Scenes/ObstacleL1.unity)"
+    ]
+  }
+}

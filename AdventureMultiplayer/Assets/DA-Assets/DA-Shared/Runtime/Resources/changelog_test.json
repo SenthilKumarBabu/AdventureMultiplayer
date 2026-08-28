@@ -1,0 +1,325 @@
+{
+  "assets": [
+    {
+      "name": "Figma Converter for Unity",
+      "assetType": 1,
+      "oldVersionDaysCount": 28,
+      "developerMessage": {
+        "localizedTexts": [
+          {
+            "language": "en",
+            "text": "Asset-level developer message rendering test. <link=\"daassets\"><color=#62A8FF><u>da-assets.com</u></color></link>"
+          },
+          {
+            "language": "ja",
+            "text": "アセット単位の開発者メッセージ表示テスト。<link=\"daassets\"><color=#62A8FF><u>da-assets.com</u></color></link>"
+          },
+          {
+            "language": "zh",
+            "text": "资产级开发者消息渲染测试。<link=\"daassets\"><color=#62A8FF><u>da-assets.com</u></color></link>"
+          }
+        ],
+        "type": 1,
+        "links": [
+          {
+            "id": "daassets",
+            "url": "https://da-assets.com/"
+          }
+        ]
+      },
+      "versions": [
+        {
+          "version": "7.1.0",
+          "versionType": 0,
+          "releaseDate": "Apr 24, 2026",
+          "description": "Added:\n• Baseline entry for testing the previous release in the new changelog popup.\n\nFixed:\n• Minor inspector text layout issues.",
+          "developerMessage": {
+            "localizedTexts": [
+              {
+                "language": "en",
+                "text": "Version-level developer message rendering test. <link=\"daassets\"><color=#62A8FF><u>da-assets.com</u></color></link>"
+              },
+              {
+                "language": "ja",
+                "text": "バージョン単位の開発者メッセージ表示テスト。<link=\"daassets\"><color=#62A8FF><u>da-assets.com</u></color></link>"
+              },
+              {
+                "language": "zh",
+                "text": "版本级开发者消息渲染测试。<link=\"daassets\"><color=#62A8FF><u>da-assets.com</u></color></link>"
+              }
+            ],
+            "type": 2,
+            "links": [
+              {
+                "id": "daassets",
+                "url": "https://da-assets.com/"
+              }
+            ]
+          },
+          "changelog": {
+            "added": [
+              {
+                "description": "Baseline entry for testing the previous release in the new changelog popup.",
+                "richText": "Baseline <code>7.1.0</code> entry for testing the previous release in the new changelog popup."
+              }
+            ],
+            "fixed": [
+              {
+                "description": "Minor inspector text layout issues.",
+                "richText": "Minor inspector text layout issues."
+              }
+            ],
+            "knownIssues": [
+              {
+                "description": "Known issue section rendering test.",
+                "richText": "Known issue section rendering test."
+              }
+            ]
+          }
+        },
+        {
+          "version": "7.2.0",
+          "versionType": 0,
+          "releaseDate": "May 1, 2026",
+          "description": "Added:\n• Keep a Changelog compatible JSON data for release notes.\n• Rich changelog popup with colored sections, inline code, and clickable documentation links.\n\nChanged:\n• Asset footer version details now render through UITK instead of the native Unity tooltip.\n\nFixed:\n• Long changelog lines wrap inside a scrollable popup.",
+          "developerMessage": {
+            "localizedTexts": [
+              {
+                "language": "en",
+                "text": "Latest version developer message rendering test."
+              },
+              {
+                "language": "ja",
+                "text": "最新バージョンの開発者メッセージ表示テスト。"
+              },
+              {
+                "language": "zh",
+                "text": "最新版本开发者消息渲染测试。"
+              }
+            ],
+            "type": 1
+          },
+          "changelog": {
+            "added": [
+              {
+                "description": "Keep a Changelog compatible JSON data for release notes.",
+                "richText": "Keep a Changelog compatible JSON data for release notes, while preserving the old <code>description</code> fallback.",
+                "links": [
+                  {
+                    "id": "keepachangelog",
+                    "url": "https://keepachangelog.com/en/1.1.0/"
+                  }
+                ]
+              },
+              {
+                "description": "Rich changelog popup with colored sections, inline code, and clickable documentation links.",
+                "richText": "Rich changelog popup with colored sections, inline <code>code</code>, and clickable <link=\"keepachangelog\"><color=#62A8FF><u>Keep a Changelog</u></color></link> links.",
+                "links": [
+                  {
+                    "id": "keepachangelog",
+                    "url": "https://keepachangelog.com/en/1.1.0/"
+                  }
+                ]
+              }
+            ],
+            "changed": [
+              {
+                "description": "Asset footer version details now render through UITK instead of the native Unity tooltip.",
+                "richText": "Asset footer version details now render through <code>UITK</code> instead of the native Unity tooltip."
+              }
+            ],
+            "deprecated": [
+              {
+                "description": "Deprecated section rendering test.",
+                "richText": "Deprecated section rendering test."
+              }
+            ],
+            "removed": [
+              {
+                "description": "Removed section rendering test.",
+                "richText": "Removed section rendering test."
+              }
+            ],
+            "fixed": [
+              {
+                "description": "Long changelog lines wrap inside a scrollable popup.",
+                "richText": "Long changelog lines wrap inside a scrollable popup."
+              }
+            ],
+            "security": [
+              {
+                "description": "No security changes in this test release.",
+                "richText": "No security changes in this test release."
+              }
+            ],
+            "notes": [
+              {
+                "description": "Notes section rendering test.",
+                "richText": "Notes section rendering test."
+              }
+            ],
+            "knownIssues": [
+              {
+                "description": "Known issues section rendering test.",
+                "richText": "Known issues section rendering test."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "ZIP Project Exporter",
+      "assetType": 8,
+      "oldVersionDaysCount": 28,
+      "versions": [
+        {
+          "version": "3",
+          "versionType": 0,
+          "releaseDate": "Apr 30, 2026",
+          "description": "ADDED:\n• Support for offline import from a ZIP archive. Now, if you don’t have a Figma Pro subscription, you can perform an unlimited number of imports without running into Figma API limits. Error 429 will no longer occur. Link to the ZIP Project Exporter tool: (https://shorturl.at/BfvcM)\n• New MCP tools that will make your import process even more automated. The GetSyncHelperReasonsTool will help your Agent understand why a particular component was imported in that specific way.\n• D.A. Outline support for drawable strokes on supported UGUI image components.\n• UniText font-stack generation, mixed-font run handling, and generated combined UniText font stacks.\n• Main Settings controls for SyncHelper cleanup after import and the temporarily disabled LayoutUpdater option.\n• Ability to copy text from the custom HelpBox that can be seen in some parts of the asset interface.\n\nCHANGED:\n• Updated the GitBook manual: added a section on working with the ZIP Project Exporter.\n• Renamed the root asset folder from \"D.A. Assets\" to \"DA-Assets\".\n• Reworked sprite identity hashing into separate object and render hashes for more accurate sprite deduplication.\n• Updated Figma node parsing to include cornerSmoothing and itemReverseZIndex.\n• Reworked UGUI auto-layout handling for reverse draw order, absolute-positioned children, layout grow, wrap sizing, background-like children, and Figma SCALE constraints.\n• Improved generated/downloaded sprite reuse by selecting the largest representative sprite source and validating existing sprite dimensions before reuse.\n• Updated sprite colorization to handle generated sprites, avoid recoloring the same asset path multiple times, and reimport updated assets.\n• Reworked UniText styling so bold/italic modifiers are applied only when the resolved font face needs them, links handle interactivity separately from visual styling, and gradients can come from graphic fill data.\n• Updated ImageLinear material/shader alpha handling with configurable alpha gamma and dithering.\n\nFIXED:\n• Sprite duplicate cleanup so imports can pause, resolve default or keep-all choices programmatically, close the duplicate finder when resolved, and redraw objects whose sprite path changed.\n• Sprite transform behavior for clipped render bounds, clip-content parents, and sprite render bounds that should not expand layout.\n• AutoSlice9 border calculation for rounded vector rectangles, effects, and solid fill/stroke cases.\n• Opaque generated PNGs with alpha rounding artifacts by normalizing near-opaque alpha values.\n• Linear image material assignment so it is used only for sprites that actually contain transparency.\n• Font matching and download naming for Google Fonts subsets, TMP, UITK, and UniText font generation.\n• Settings window refresh by updating serialized data and clamping the selected tab index.\n\nREMOVED:\n• The legacy FcuInfoTool MCP tool and asset.",
+          "changelog": {
+            "added": [
+              {
+                "description": "Support for offline import from a ZIP archive. Now, if you don’t have a Figma Pro subscription, you can perform an unlimited number of imports without running into Figma API limits. Error 429 will no longer occur. Link to the ZIP Project Exporter tool: (https://shorturl.at/BfvcM).",
+                "richText": "Support for offline import from a ZIP archive. Now, if you don’t have a Figma Pro subscription, you can perform an unlimited number of imports without running into Figma API limits. Error <code>429</code> will no longer occur. Link to the ZIP Project Exporter tool: (<link=\"offlineconverter\"><color=#62A8FF><u>https://shorturl.at/BfvcM</u></color></link>).",
+                "links": [
+                  {
+                    "id": "offlineconverter",
+                    "url": "https://shorturl.at/BfvcM"
+                  }
+                ]
+              },
+              {
+                "description": "New MCP tools that will make your import process even more automated. The GetSyncHelperReasonsTool will help your Agent understand why a particular component was imported in that specific way.",
+                "richText": "New <code>MCP</code> tools that will make your import process even more automated. The <code>GetSyncHelperReasonsTool</code> will help your Agent understand why a particular component was imported in that specific way."
+              },
+              {
+                "description": "D.A. Outline support for drawable strokes on supported UGUI image components.",
+                "richText": "<code>D.A. Outline</code> support for drawable strokes on supported <code>UGUI</code> image components."
+              },
+              {
+                "description": "UniText font-stack generation, mixed-font run handling, and generated combined UniText font stacks.",
+                "richText": "<code>UniText</code> font-stack generation, mixed-font run handling, and generated combined <code>UniText</code> font stacks."
+              },
+              {
+                "description": "Main Settings controls for SyncHelper cleanup after import and the temporarily disabled LayoutUpdater option.",
+                "richText": "Main Settings controls for <code>SyncHelper</code> cleanup after import and the temporarily disabled <code>LayoutUpdater</code> option."
+              },
+              {
+                "description": "Ability to copy text from the custom HelpBox that can be seen in some parts of the asset interface.",
+                "richText": "Ability to copy text from the custom <code>HelpBox</code> that can be seen in some parts of the asset interface."
+              }
+            ],
+            "changed": [
+              {
+                "description": "Updated the GitBook manual: added a section on working with the ZIP Project Exporter.",
+                "richText": "Updated the <code>GitBook</code> manual: added a section on working with the <link=\"offlineconverter\"><color=#62A8FF><u>ZIP Project Exporter</u></color></link>.",
+                "links": [
+                  {
+                    "id": "offlineconverter",
+                    "url": "https://shorturl.at/BfvcM"
+                  }
+                ]
+              },
+              {
+                "description": "Renamed the root asset folder from \"D.A. Assets\" to \"DA-Assets\".",
+                "richText": "Renamed the root asset folder from <code>D.A. Assets</code> to <code>DA-Assets</code>."
+              },
+              {
+                "description": "Reworked sprite identity hashing into separate object and render hashes for more accurate sprite deduplication.",
+                "richText": "Reworked sprite identity hashing into separate object and render hashes for more accurate sprite deduplication."
+              },
+              {
+                "description": "Updated Figma node parsing to include cornerSmoothing and itemReverseZIndex.",
+                "richText": "Updated Figma node parsing to include <code>cornerSmoothing</code> and <code>itemReverseZIndex</code>."
+              },
+              {
+                "description": "Reworked UGUI auto-layout handling for reverse draw order, absolute-positioned children, layout grow, wrap sizing, background-like children, and Figma SCALE constraints.",
+                "richText": "Reworked <code>UGUI</code> auto-layout handling for reverse draw order, absolute-positioned children, layout grow, wrap sizing, background-like children, and Figma <code>SCALE</code> constraints."
+              },
+              {
+                "description": "Improved generated/downloaded sprite reuse by selecting the largest representative sprite source and validating existing sprite dimensions before reuse.",
+                "richText": "Improved generated/downloaded sprite reuse by selecting the largest representative sprite source and validating existing sprite dimensions before reuse."
+              },
+              {
+                "description": "Updated sprite colorization to handle generated sprites, avoid recoloring the same asset path multiple times, and reimport updated assets.",
+                "richText": "Updated sprite colorization to handle generated sprites, avoid recoloring the same asset path multiple times, and reimport updated assets."
+              },
+              {
+                "description": "Reworked UniText styling so bold/italic modifiers are applied only when the resolved font face needs them, links handle interactivity separately from visual styling, and gradients can come from graphic fill data.",
+                "richText": "Reworked <code>UniText</code> styling so bold/italic modifiers are applied only when the resolved font face needs them, links handle interactivity separately from visual styling, and gradients can come from graphic fill data."
+              },
+              {
+                "description": "Updated ImageLinear material/shader alpha handling with configurable alpha gamma and dithering.",
+                "richText": "Updated <code>ImageLinear</code> material/shader alpha handling with configurable alpha gamma and dithering."
+              }
+            ],
+            "fixed": [
+              {
+                "description": "Sprite duplicate cleanup so imports can pause, resolve default or keep-all choices programmatically, close the duplicate finder when resolved, and redraw objects whose sprite path changed.",
+                "richText": "Sprite duplicate cleanup so imports can pause, resolve default or keep-all choices programmatically, close the duplicate finder when resolved, and redraw objects whose sprite path changed."
+              },
+              {
+                "description": "Sprite transform behavior for clipped render bounds, clip-content parents, and sprite render bounds that should not expand layout.",
+                "richText": "Sprite transform behavior for clipped render bounds, clip-content parents, and sprite render bounds that should not expand layout."
+              },
+              {
+                "description": "AutoSlice9 border calculation for rounded vector rectangles, effects, and solid fill/stroke cases.",
+                "richText": "<code>AutoSlice9</code> border calculation for rounded vector rectangles, effects, and solid fill/stroke cases."
+              },
+              {
+                "description": "Opaque generated PNGs with alpha rounding artifacts by normalizing near-opaque alpha values.",
+                "richText": "Opaque generated <code>PNG</code>s with alpha rounding artifacts by normalizing near-opaque alpha values."
+              },
+              {
+                "description": "Linear image material assignment so it is used only for sprites that actually contain transparency.",
+                "richText": "Linear image material assignment so it is used only for sprites that actually contain transparency."
+              },
+              {
+                "description": "Font matching and download naming for Google Fonts subsets, TMP, UITK, and UniText font generation.",
+                "richText": "Font matching and download naming for <code>Google Fonts</code> subsets, <code>TMP</code>, <code>UITK</code>, and <code>UniText</code> font generation."
+              },
+              {
+                "description": "Settings window refresh by updating serialized data and clamping the selected tab index.",
+                "richText": "Settings window refresh by updating serialized data and clamping the selected tab index."
+              }
+            ],
+            "removed": [
+              {
+                "description": "The legacy FcuInfoTool MCP tool and asset.",
+                "richText": "The legacy <code>FcuInfoTool</code> <code>MCP</code> tool and asset."
+              }
+            ]
+          }
+        },
+        {
+          "version": "999",
+          "versionType": 0,
+          "releaseDate": "May 6, 2026",
+          "description": "Added:\n• Future version display test entry with a clickable changelog link.",
+          "changelog": {
+            "added": [
+              {
+                "description": "Future version display test entry with a clickable changelog link.",
+                "richText": "Future version display test entry with a clickable <link=\"offlineconverter\"><color=#62A8FF><u>ZIP Project Exporter</u></color></link> link.",
+                "links": [
+                  {
+                    "id": "offlineconverter",
+                    "url": "https://shorturl.at/BfvcM"
+                  }
+                ]
+              }
+            ],
+            "notes": [
+              {
+                "description": "This entry exists only in the test changelog to verify latest version rendering.",
+                "richText": "This entry exists only in the test changelog to verify <code>latest version</code> rendering."
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

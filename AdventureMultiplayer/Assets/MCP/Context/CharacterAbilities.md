@@ -18,7 +18,7 @@ No custom ability code needed — all abilities use existing PLAYER TWO mechanic
 | 1 | **Blaze** | Racer | Mixamo | Dash | `canAirDash`, `canGroundDash`, dash stats |
 | 2 | **Bolt** | Sporty Granny | Existing | Sprinter | `topSpeed`, `runningTopSpeed`, acceleration stats |
 | 3 | **Bruno** | Big Vegas | Existing | Roller | `canRoll`, `canRollOnAir`, rolling stats |
-| 4 | **Spike** | Vanguard By T. Choonyung | Mixamo | Air Dive | `canAirDive`, air dive stats |
+| 4 | **Spike** | Vanguard By T. Choonyung | Mixamo | High Jump | `canAirDive`, air dive stats |
 
 ---
 
@@ -106,8 +106,8 @@ No custom ability code needed — all abilities use existing PLAYER TWO mechanic
 
 ---
 
-### 4 · Spike — Air Diver
-> Highest jump in the roster. Dives into the ground and launches back up — punishing aerial sections.
+### 4 · Spike — High Jumper
+> Highest jump in the roster. A second, in-air burst rockets him even higher — dominates vertical sections.
 
 | Stat          | Bar          | Score |
 |---------------|--------------|-------|
@@ -117,9 +117,9 @@ No custom ability code needed — all abilities use existing PLAYER TWO mechanic
 | Air Control   | `█████████░` | 9/10  |
 | Ability Power | `█████████░` | 9/10  |
 
-**Ability — Air Dive:** Highest jump (`maxJumpHeight 20`) sets up dives. Powerful dive force (`airDiveForwardForce 28` vs default 16), low friction on landing (`airDiveFriction 20`), massive bounce recovery (`airDiveGroundLeapHeight 18` vs default 10).  
-**Cooldown:** 1.5s after each dive (bounce + fall time makes this feel natural, not punishing).  
-**Strong at:** Aerial sections, slope dives, bounce chaining.  
+**Ability — High Jump:** Highest base jump (`maxJumpHeight 20`), and mid-air activation adds a strong upward burst (`highJumpForce 30`, +`superChargeBonusHeight 12` with SuperCharge) on top of it, implemented as `SpikeHighJumpState` (replaces `AirDivePlayerState`). Still carries the tuned forward force/landing feel (`airDiveForwardForce 18`, `airDiveFriction 25`, `airDiveGroundLeapHeight 6`) for a soft, controllable landing.  
+**Cooldown:** 2.0s after each use (`SpikeCooldown`), also gated by an instant 40-mana cost (`ManaSystem`).  
+**Strong at:** Aerial sections, reaching high platforms, vertical gaps.  
 **Weak at:** Horizontal gap crossing, no burst tool on flat ground.
 
 ---
@@ -142,4 +142,4 @@ No custom ability code needed — all abilities use existing PLAYER TWO mechanic
 | **Blaze** | Dash | Crossing gaps instantly, burst speed | Sustained acceleration |
 | **Bolt** | Sprinter | Straight sections | Corners, air, precision jumps |
 | **Bruno** | Roller | Slopes, downhill, momentum | Uphill, flat starts, air |
-| **Spike** | Air Dive | Aerial sections, bounce recovery | Horizontal gaps, flat ground |
+| **Spike** | High Jump | Aerial sections, reaching high platforms | Horizontal gaps, flat ground |

@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 203c5f61e1ba04744bfbe434d5dde5ba
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/AssetPipeline/Fonts/UniText/UniTextFontCreator.cs
+  uploadId: 960946

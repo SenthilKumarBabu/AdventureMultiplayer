@@ -84,11 +84,8 @@ namespace AdventureMultiplayer
         private void TryBindInventory()
         {
             if (_inventory != null) return;
-            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient) return;
-
-            ulong localId = NetworkManager.Singleton.LocalClientId;
-            if (PlayerPowerUpInventory.All.TryGetValue(localId, out var inv))
-                _inventory = inv;
+            var localObj = NetworkManager.Singleton?.LocalClient?.PlayerObject;
+            if (localObj != null) _inventory = localObj.GetComponent<PlayerPowerUpInventory>();
         }
 
         private async UniTaskVoid WaitForInventoryAsync()
@@ -156,11 +153,16 @@ namespace AdventureMultiplayer
 
         private Sprite GetIcon(int typeInt)
         {
-            if (powerUpIcons == null) return emptySlotSprite;
             var type = (PowerUpType)typeInt;
-            foreach (var entry in powerUpIcons)
-                if (entry.type == type) return entry.icon;
-            return emptySlotSprite;
+            if (powerUpIcons != null)
+                foreach (var entry in powerUpIcons)
+                    if (entry.type == type) return entry.icon;
+
+            // No mapping for this type — return null (blank icon) rather than
+            // emptySlotSprite, so a held item never renders identically to an
+            // empty slot. Assign an icon for this type in the Inspector.
+            Debug.LogWarning($"[PowerUpSlotHUD] No icon mapped for {type} — add an entry to powerUpIcons.");
+            return null;
         }
     }
 }

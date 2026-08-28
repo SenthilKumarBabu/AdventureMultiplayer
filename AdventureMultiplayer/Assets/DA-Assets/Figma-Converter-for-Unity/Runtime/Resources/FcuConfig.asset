@@ -1,0 +1,453 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 471efbc970a337c4c83b1330ba757435, type: 3}
+  m_Name: FcuConfig
+  m_EditorClassIdentifier: 
+  productVersion: 7.5.1
+  localizator:
+    locFile: {fileID: 4900000, guid: 76e267d64912f5c44a25b64a5d86254b, type: 3}
+    _language: 0
+  isLanguageInitialized: 1
+  tags:
+  - label: None
+    fcuTag: 0
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 0
+    hasComponent: 0
+  - label: Page
+    fcuTag: 3
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 0
+    hasComponent: 0
+  - label: Frame
+    fcuTag: 2
+    figmaTag: frame
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 0
+    hasComponent: 0
+  - label: Container
+    fcuTag: 1
+    figmaTag: cont
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 1
+    hasComponent: 0
+  - label: Image
+    fcuTag: 201
+    figmaTag: img
+    customButtonTag: 0
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 1
+    hasComponent: 1
+  - label: Background
+    fcuTag: 203
+    figmaTag: bg
+    customButtonTag: 0
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 1
+    hasComponent: 1
+  - label: Vector
+    fcuTag: 202
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 1
+    hasComponent: 0
+  - label: Text
+    fcuTag: 200
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 0
+    hasComponent: 1
+  - label: Placeholder
+    fcuTag: 302
+    figmaTag: ph
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 0
+    hasComponent: 1
+  - label: AutoLayoutGroup
+    fcuTag: 100
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 0
+    hasComponent: 1
+  - label: ContentSizeFitter
+    fcuTag: 101
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 0
+    hasComponent: 1
+  - label: AspectRatioFitter
+    fcuTag: 102
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 1
+    hasComponent: 1
+  - label: BtnDefault
+    fcuTag: 400
+    figmaTag: def
+    customButtonTag: 1
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 1
+    hasComponent: 0
+  - label: BtnHover
+    fcuTag: 401
+    figmaTag: hov
+    customButtonTag: 1
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 1
+    hasComponent: 0
+  - label: BtnPressed
+    fcuTag: 402
+    figmaTag: pres
+    customButtonTag: 1
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 1
+    hasComponent: 0
+  - label: BtnSelected
+    fcuTag: 403
+    figmaTag: sel
+    customButtonTag: 1
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 1
+    hasComponent: 0
+  - label: BtnDisabled
+    fcuTag: 404
+    figmaTag: dis
+    customButtonTag: 1
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 1
+    hasComponent: 0
+  - label: BtnLooped
+    fcuTag: 405
+    figmaTag: lp
+    customButtonTag: 1
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 1
+    hasComponent: 0
+  - label: Button
+    fcuTag: 300
+    figmaTag: btn
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 0
+    hasComponent: 1
+  - label: InputField
+    fcuTag: 301
+    figmaTag: fld
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 0
+    hasComponent: 1
+  - label: PasswordField
+    fcuTag: 304
+    figmaTag: pwd
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 0
+    hasComponent: 1
+  - label: ScrollView
+    fcuTag: 303
+    figmaTag: scroll
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 0
+    hasComponent: 1
+  - label: Toggle
+    fcuTag: 305
+    figmaTag: tg
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 0
+    hasComponent: 1
+  - label: ToggleGroup
+    fcuTag: 306
+    figmaTag: tgr
+    customButtonTag: 0
+    canBeDownloaded: 0
+    canBeInsideSingleImage: 0
+    hasComponent: 1
+  - label: Shadow
+    fcuTag: 500
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 0
+    hasComponent: 1
+  - label: CanvasGroup
+    fcuTag: 501
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 1
+    hasComponent: 1
+  - label: Mask
+    fcuTag: 502
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 1
+    hasComponent: 1
+  - label: Blur
+    fcuTag: 503
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 0
+    hasComponent: 1
+  - label: Ignore
+    fcuTag: 600
+    figmaTag: ignore
+    customButtonTag: 0
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 0
+    hasComponent: 0
+  - label: 9-slice-plugin
+    fcuTag: 204
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 0
+    hasComponent: 0
+  - label: 9-slice-auto
+    fcuTag: 205
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 0
+    hasComponent: 0
+  - label: Layout Grid
+    fcuTag: 504
+    figmaTag: 
+    customButtonTag: 0
+    canBeDownloaded: 1
+    canBeInsideSingleImage: 1
+    hasComponent: 1
+  docsBaseUrl: https://da-assets.gitbook.io/docs
+  webLogFileName: response.json
+  zipManifestFileName: manifest.json
+  zipExtractFolderName: FCU_Zip_Import
+  zipNodeFileExtension: .json
+  defaultTmpShaderName: TextMeshPro/Distance Field
+  dateTimeFormat1: HH-mm-ss-fff
+  showDecorativeEditorBackground: 1
+  canvasGameObjectName: Canvas {0}
+  i2LocGameObjectName: Language Source
+  rounding:
+    isCircle: 0
+    boundingSize: 2
+    position: 2
+    strokeWeight: 1
+    rotation: 3
+    angleFromMatrix: 2
+    diffCheckerSize: 2
+    padding: 0
+    fontParams: 2
+    maxAllowedScale: 2
+  recentProjectsLimit: 20
+  logFilesLimit: 50
+  setImgTypeSpriteMaxRetries: 50
+  maxRenderSize: 4096
+  spriteDownloadTimeoutSeconds: 180
+  blurredObjectTag: UIBlur
+  blurCameraTag: BackgroundBlur
+  realTagSeparator: 45
+  childParsingLimit: 512
+  chunkSizeGetNodes: 10
+  frameListDepth: 2
+  googleFontsApiKeyPrefsKey: FCU_GOOGLE_FONTS_API_KEY
+  fuitkConfig: {fileID: 11400000, guid: 42a40123c7c802f4d8b8bf1347dc5c01, type: 2}
+  mcpServerConfig: {fileID: 11400000, guid: 7d1af551e0f901a4d8cb27c2e1337bfb, type: 2}
+  uitkConverterScript: {fileID: 11500000, guid: f91f79945c73ff74180157d8afa25180, type: 3}
+  whiteSprite32px: {fileID: 21300000, guid: c863a1ee30e5f0a478b421c09b3bcfd9, type: 3}
+  missingImageTexture128px: {fileID: 21300000, guid: 3e820c8fcbbdcfd4592a8ccbb7de0370, type: 3}
+  baseClass: {fileID: 4900000, guid: 8e32de32e14b50747995a6f5a08bb9ae, type: 3}
+  imageLinearMaterial: {fileID: 2100000, guid: 41bc1ce8da9e87a4fa340d902394e0df, type: 2}
+  vectorMaterials:
+    UnlitVector: {fileID: 2100000, guid: 73ddb2958e9cd451c82f37c26efa5eb0, type: 2}
+    UnlitVectorGradient: {fileID: 2100000, guid: 137d858a4eae4d34298f3cdcd31f5e0b, type: 2}
+    UnlitVectorGradientUI: {fileID: 2100000, guid: 0b012844cadfbe541b20626331cf90a2, type: 2}
+    UnlitVectorUI: {fileID: 2100000, guid: 8d66e65c66e29504199ed664979682cd, type: 2}
+  horizontalSpacePrefab: {fileID: 9161449852706868370, guid: ebc67bef85178c24fae703c2592e47f5, type: 3}
+  verticalSpacePrefab: {fileID: 8586468824020557356, guid: 5fb1c82f2408faf46be63a7a2bac7e51, type: 3}
+  reasonDescriptions:
+    m_Keys: 000000006400000065000000660000006700000068000000690000006a0000006b0000006c0000006d0000006e0000006f0000007000000071000000c8000000c9000000ca000000cb000000cc000000cd000000ce000000cf000000d0000000d1000000d2000000d3000000d4000000d5000000d6000000d7000000d8000000d9000000da000000db000000dc000000dd000000de000000df0000002c0100002d0100002e0100002f010000300100003101000032010000330100003401000035010000360100003701000090010000910100009201000093010000940100009501000096010000f4010000f5010000f6010000f7010000f8010000f901000058020000590200005a0200005b0200005c0200005d0200005e020000bc020000bd020000be020000bf020000200300002103000022030000230300002403000025030000e8030000e9030000ea030000eb030000ec030000ed030000ee030000ef030000f0030000f1030000fc030000fd030000fe03000006040000100400001a040000240400002e04000038040000420400004c04000056040000600400006a040000740400007e04000088040000140500001e0500001f05000028050000320500003c0500004605000047050000500500005a0500005b05000064050000650500006e0500006f0500007805000082050000
+    m_Values:
+    - Reason has not been set.
+    - The object is empty (has no visible content), so it was skipped.
+    - "The object is manually tagged as image (e.g. with the \u2018img\u2019 tag),
+      so child components are ignored."
+    - The vector is at the root of the frame, so it is recognized as a single image.
+    - "Button transition type is \u2018SpriteSwapForAll\u2019, so the button child
+      is forced as a downloadable image."
+    - The object contains an icon child, so it is forced as a container.
+    - Object has custom button tags and its child tree allows single image, so it
+      is treated as a downloadable image.
+    - "The object\u2019s child tree contains only vectors/non-UI elements, recognized
+      as a single image."
+    - The object is a Figma boolean operation, treated as a single image.
+    - The object has visible children, treated as a container.
+    - No specific condition matched, so the object cannot be inside a single image
+      (default behavior).
+    - The object is forced as a container, cannot be inside a single image.
+    - Object is already forced as an image, so it is not merged into a parent single
+      image.
+    - "Since this object contains the tags \u2018{0}\u2019, its parent cannot be
+      a single sprite."
+    - "This object\u2019s tags do not prevent setting the parent as a single sprite;
+      however, if you see this message, other objects in the hierarchy are preventing
+      it."
+    - "The object is empty \u2014 not downloadable."
+    - "Manually tagged as image \u2014 always downloadable."
+    - "The object is a Figma vector \u2014 always downloadable."
+    - "The object is used as a mask \u2014 always downloadable."
+    - "The object doesn\u2019t have the Image tag \u2014 not downloadable."
+    - "One of the object\u2019s tags prevents downloading."
+    - "The object has arc data (e.g. pie chart) \u2014 always downloadable."
+    - "Contains an image, emoji, or video fill \u2014 always downloadable."
+    - "Fill with transparency + stroke \u2014 must be downloaded as image."
+    - "Object smaller than 48px with outside stroke \u2014 must be downloaded."
+    - "Multiple visible fills \u2014 must be downloaded."
+    - "Multiple visible strokes \u2014 must be downloaded."
+    - "Both fill and stroke present \u2014 must be downloaded."
+    - Both fill and stroke are present, but the current procedural component (MPUIKit/FlexibleImage)
+      supports rendering them without downloading.
+    - No fills or strokes found.
+    - "Gradients unsupported by current framework \u2014 must be downloaded."
+    - The gradient type used in this object is supported by the selected image component,
+      so it will be rendered procedurally instead of downloading.
+    - "Not a rectangle shape \u2014 must be downloaded."
+    - "Has rounded corners \u2014 must be downloaded."
+    - "Has visible strokes \u2014 must be downloaded."
+    - Gradient fill + stroke unsupported by procedural component.
+    - "Has shadow effects \u2014 must be downloaded."
+    - "Has blur effects \u2014 must be downloaded."
+    - "No downloadable condition was matched \u2014 the object is not downloadable."
+    - "SVG image component is used \u2014 generation not needed."
+    - "Procedural image component is used \u2014 generation not needed."
+    - "UI Toolkit framework is used \u2014 generation not needed."
+    - "Nova framework is used \u2014 generation not needed."
+    - "The object is downloadable \u2014 generation not needed."
+    - "Overlapped by a stroke \u2014 generation not applicable."
+    - "The object\u2019s render size exceeds the maximum allowed for sprite generation."
+    - "Not a rectangle \u2014 cannot be generated."
+    - "Has both fill and stroke \u2014 cannot be generated."
+    - The object has only a stroke (no fill), so a sprite can be generated for it.
+    - The object has rounded corners, so a sprite can be generated for it.
+    - "Sprite generation failed at runtime \u2014 fallback to Drawable."
+    - Object mask applied via Nova ClipMask with sprite texture.
+    - Object mask applied via Unity Mask component (showMaskGraphic=false).
+    - Object mask not supported in SpriteRenderer mode.
+    - Frame/clip mask applied via Nova ClipMask.
+    - Frame/clip mask applied via Unity Mask (linear material or rotated object).
+    - Frame/clip mask applied via RectMask2D.
+    - Frame/clip mask not supported in SpriteRenderer mode.
+    - Solid fill color applied directly to the image component.
+    - Gradient fill rendered natively by the image component (FlexibleImage only).
+    - Gradient fill applied via an external DAGradient component, since the image
+      component does not support gradients natively.
+    - "No fill present \u2014 the object is in stroke-only mode, so the fill color
+      is set to transparent."
+    - "Fill is baked into the downloaded or generated sprite \u2014 no additional
+      color processing needed."
+    - "Sprite has a single dominant color \u2014 applied as a tint to reduce texture
+      memory usage."
+    - Stroke rendered natively by the image component (Shapes2D outlineSize, MPUIKit
+      OutlineWidth, FlexibleImage outline).
+    - "Stroke applied via Unity Outline component \u2014 used for OUTSIDE stroke
+      alignment when the image component does not support it natively."
+    - Stroke applied via SpriteOutline component (SpriteRenderer mode only).
+    - Stroke rendered as procedural border width (JoshPUI BorderWidth, DttPUI BorderThickness)
+      in stroke-only mode.
+    - "Stroke is baked into the downloaded or generated sprite \u2014 no additional
+      stroke processing needed."
+    - "Stroke alignment (CENTER or INSIDE) is not supported by the current image
+      component \u2014 stroke was ignored and removed."
+    - "No stroke processing needed \u2014 the object has no visible strokes."
+    - 9-slice plugin structure detected and applied successfully.
+    - "The object has no children \u2014 cannot apply 9-slice plugin structure."
+    - The object does not have exactly 9 child elements required for 9-slice.
+    - The child elements do not have the correct anchor positions for 9-slice.
+    - "Auto 9-slice applied \u2014 sprite borders set from rounded corners."
+    - "The object has no rounded corners \u2014 auto 9-slice not applicable."
+    - "The object is not a rectangle \u2014 auto 9-slice not applicable."
+    - "The object has multiple colors or gradients \u2014 auto 9-slice not applicable."
+    - The object has effects (shadow, blur) incompatible with auto 9-slice.
+    - "The object has children \u2014 auto 9-slice not applicable."
+    - "The object is a Figma vector \u2014 tagged as Image."
+    - "The object has visible fills \u2014 tagged as Image."
+    - "The object has visible strokes \u2014 tagged as Image."
+    - The object is recognized as a background element.
+    - "The object is a Figma boolean operation \u2014 treated as a single Image."
+    - "The object\u2019s children contain only vectors \u2014 merged into a single
+      Image."
+    - "The object is manually tagged as image (e.g. with the \u2018img\u2019 tag)."
+    - "The vector is at the root of the frame \u2014 recognized as Image."
+    - The object has button tags and can be rendered as a single Image.
+    - "Button transition uses SpriteSwapForAll \u2014 child forced as Image."
+    - "The object has visible children \u2014 tagged as Container."
+    - "The object contains an icon child \u2014 forced as Container."
+    - The object is manually forced as a Container.
+    - "The parent is a Page \u2014 the object is tagged as Frame."
+    - "The Figma node type is TEXT \u2014 tagged as Text."
+    - "The object has a Figma Auto Layout mode \u2014 tagged as AutoLayoutGroup."
+    - "Text has auto-resize enabled (Height or WidthAndHeight) \u2014 tagged as ContentSizeFitter."
+    - "The object has \u2018Preserve Ratio\u2019 enabled \u2014 tagged as AspectRatioFitter."
+    - "The object is a Figma mask or has clip content \u2014 tagged as Mask."
+    - "The object name matches button naming convention \u2014 tagged as Button."
+    - "The object has shadow effects \u2014 tagged as Shadow."
+    - "The object has background blur \u2014 tagged as Blur."
+    - "The object has layout grids \u2014 tagged as LayoutGrid."
+    - "The object opacity is not 1.0 \u2014 tagged as CanvasGroup."
+    - "The object has a valid 9-slice plugin structure \u2014 tagged as Slice9."
+    - "The object passed auto 9-slice checks \u2014 tagged as AutoSlice9."
+    - The object name contains a manual Figma tag (e.g. btn-default).
+    - "Parent is not a Page \u2014 Frame tag not assigned."
+    - "Object has no Auto Layout mode (HORIZONTAL/VERTICAL/WRAP) \u2014 AutoLayoutGroup
+      not assigned."
+    - "Object has Auto Layout mode but no visible children \u2014 AutoLayoutGroup
+      not assigned."
+    - "PreserveRatio is not enabled on this object \u2014 AspectRatioFitter not assigned."
+    - "Object is not a Figma mask and does not have clip content \u2014 Mask not
+      assigned."
+    - "Object name is not \"button\" \u2014 Button tag not assigned."
+    - "Text auto-resize is not set to HEIGHT or WIDTH_AND_HEIGHT \u2014 ContentSizeFitter
+      not assigned."
+    - "Parent has Auto Layout \u2014 LayoutElement.preferred* handles sizing instead
+      of ContentSizeFitter."
+    - "Object has no visible fills or strokes and is not a vector \u2014 Image tag
+      not assigned."
+    - "Object has no effects \u2014 Shadow tag not assigned."
+    - Object has shadow effects, but the current framework/component does not support
+      them (e.g. UITK, SpriteRenderer, UGUI without TrueShadow).
+    - "Object has no effects \u2014 Blur tag not assigned."
+    - Object has background blur effects, but Blur is only supported in Nova framework.
+    - Object has layout grids, but DrawLayoutGrids is disabled in Main Settings.
+    - "Object has no layout grids \u2014 LayoutGrid tag not assigned."
+    - "Object opacity is 1.0 \u2014 CanvasGroup not needed."
+    - "Object has no visible children \u2014 Container tag not assigned."
+    rowCount: 1
+  hierarchyDelimiter: 47
+  parentId: 603951929:602259738
+  asterisksChar: 8226
+  rateMePrefsKey: DONT_SHOW_RATEME
+  recentProjectsPrefsKey: recentProjectsPrefsKey

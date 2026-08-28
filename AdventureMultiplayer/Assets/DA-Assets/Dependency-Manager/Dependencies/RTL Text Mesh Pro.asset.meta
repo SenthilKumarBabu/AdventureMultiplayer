@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c7ad58bcbab1a2546ba954a41e44650e
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Dependency-Manager/Dependencies/RTL Text Mesh Pro.asset
+  uploadId: 960946

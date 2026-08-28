@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 438342ecebaaff8479da54004f191fc1
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Shared/Runtime/Scripts/Tools/CoroutineRunner.cs
+  uploadId: 960946

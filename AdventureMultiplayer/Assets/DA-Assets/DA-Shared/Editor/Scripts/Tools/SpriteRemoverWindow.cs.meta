@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: a4a37961f301a504ab7f4e37d251e67e
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Shared/Editor/Scripts/Tools/SpriteRemoverWindow.cs
+  uploadId: 960946

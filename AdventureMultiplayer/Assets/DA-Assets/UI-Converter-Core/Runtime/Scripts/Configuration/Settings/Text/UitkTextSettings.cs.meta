@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: f3245c1906469d34a88743e89715e852
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Configuration/Settings/Text/UitkTextSettings.cs
+  uploadId: 960946

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: afe10614a552471e824aa61175e116bd
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Figma-Converter-for-Unity/Runtime/Resources/MCP/Tools/ManageFcuSettingsTool.asset
+  uploadId: 960946

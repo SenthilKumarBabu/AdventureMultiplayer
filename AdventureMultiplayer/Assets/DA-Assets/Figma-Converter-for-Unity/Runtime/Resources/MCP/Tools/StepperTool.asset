@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce052722ed547544eb4bbaf99ed6d422, type: 3}
+  m_Name: StepperTool
+  m_EditorClassIdentifier: 
+  ToolName: start_import_step
+  ToolDescription: |-
+    Starts importing from the given step index and continues automatically until completion or until a user action is required.
+    The optional sprite_duplicate_resolution only resolves an already pending SpriteDuplicateRemover pause after the user explicitly chooses default duplicate handling or keeping all duplicates. It does not preconfigure future import steps.
+    The response is JSON with status, message, next_step, requires_user_action, pause_reason, requires_explicit_user_choice, user_message, agent_instruction, and available_actions.
+  InstanceTypeName: DA_Assets.FCU.FigmaConverterUnity
+  InstanceLabel: FCU
+  Schema:
+    Type: object
+    Properties:
+      m_Keys:
+      - step_index
+      - sprite_duplicate_resolution
+      m_Values:
+      - Type: integer
+        Description: Import step index to execute (0-based). Use 0 to initialize
+          the import.
+      - Type: string
+        Description: Optional duplicate handling for an already pending SpriteDuplicateRemover
+          pause. Only pass this after interpreting the user's explicit natural-language
+          choice. Internally use apply_default to apply the default selected duplicates
+          or keep_all_duplicates to deselect all duplicates and continue. Do not show
+          these internal values to the user. If the user handles duplicates manually
+          in Unity, omit this argument when continuing with the returned next_step.
+    Required:
+    - step_index
+  ResponseTemplates:
+    m_Keys:
+    - sprite_duplicate_user_message
+    - sprite_duplicate_agent_instruction
+    m_Values:
+    - How would you like to handle duplicate sprites? I can apply the default duplicate selection, keep all duplicates, or you can choose the sprites manually in Unity and then tell me to continue the import.
+    - Show user_message to the user in their language. Do not show internal action names, JSON field names, or a command list. Interpret the user's reply: default duplicate selection => call next_step with sprite_duplicate_resolution=apply_default; keep all duplicates => call next_step with sprite_duplicate_resolution=keep_all_duplicates; manual Unity selection => wait until the user says they are done, then call next_step without sprite_duplicate_resolution.

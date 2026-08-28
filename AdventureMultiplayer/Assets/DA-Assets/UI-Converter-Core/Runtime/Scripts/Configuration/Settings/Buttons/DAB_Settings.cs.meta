@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 930805e177a096b438aebf7c5bb76c77
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Configuration/Settings/Buttons/DAB_Settings.cs
+  uploadId: 960946

@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: c8b27b6dc4af4c65a0d1531a5c3a9880
+timeCreated: 1575827487
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Corner-Rounder/Runtime/Shaders/ShaderSetup.cginc
+  uploadId: 960946

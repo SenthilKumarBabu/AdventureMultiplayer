@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: 9c6e102231dc1ca4d91278f3df36b835
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - gui: {fileID: 11400000, guid: a44df56cea3f6824785751338c356dd1, type: 2}
+  - uitk: {fileID: 11400000, guid: 6aa927d48ae2bfb41b8a62e60ef3e8cb, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Editor/Scripts/Tabs/MainTab.cs
+  uploadId: 960946

@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 73d9272a2938b8e439ec6bc13d87b2bd
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Editor/Scripts/Tools/FieldResetExtensions.cs
+  uploadId: 960946

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 4a586c6f80854f9d958e5a1c715534b0
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Gradient/Runtime/Resources/GradientConfig.asset
+  uploadId: 960946

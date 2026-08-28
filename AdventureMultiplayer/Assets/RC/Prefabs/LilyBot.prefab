@@ -841,11 +841,14 @@ GameObject:
   - component: {fileID: 2421139287627459445}
   - component: {fileID: 698857577358643038}
   - component: {fileID: 2626636856273759278}
-  - component: {fileID: 1100000000000000001}
   - component: {fileID: 6650432633027884998}
-  - component: {fileID: 652188543435298410}
-  - component: {fileID: 2848334687171170724}
-  - component: {fileID: 7248487730141842086}
+  - component: {fileID: 3415193239545917246}
+  - component: {fileID: 754425043687724578}
+  - component: {fileID: 353803238368158551}
+  - component: {fileID: 9218200796089741905}
+  - component: {fileID: 9218200796089741906}
+  - component: {fileID: 9218200796089741907}
+  - component: {fileID: 9218200796089741908}
   m_Layer: 0
   m_Name: LilyBot
   m_TagString: Untagged
@@ -906,7 +909,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actions: {fileID: 0}
+  actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   desiredMoveDirection: {x: 0, y: 0, z: 0}
   jumpQueued: 0
   runHeld: 0
@@ -1352,55 +1355,6 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 15873
---- !u!114 &1100000000000000001
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6650432633027884458}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b1c2d3e4b1c2d3e4b1c2d3e4b1c2d3e4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  difficulty: 1
-  scanInterval: 1.5
-  arrivalRadius: 1.5
-  jumpCooldown: 0.5
-  maxDirectJumpHeight: 4
-  directWalkFallbackMaxHeight: 2
-  jumpProximityRange: 4
-  launcherExitReach: 20
-  obstacleCheckDistance: 1.2
-  wallJumpClearHeight: 2.5
-  obstacleLayer:
-    serializedVersion: 2
-    m_Bits: 67141619
-  stallTimeout: 4
-  blacklistDuration: 20
-  platformBoardingRange: 3.5
-  platformBoardedThreshold: 1.5
-  starValue: 100
-  heartValue: 80
-  lifeValue: 70
-  redCoinValue: 30
-  blueCoinValue: 25
-  itemBoxValue: 20
-  coinValue: 10
-  goalMode: 0
-  hazardAvoidRadius: 4
-  hazardAvoidStrength: 2.5
-  spinRange: 2.5
-  spinCooldown: 1.2
-  stompDetectRange: 6
-  dashMinDistance: 10
-  dashCooldown: 3
-  airDiveMinYDiff: 4
-  rollMinDistance: 12
-  pickupRange: 2.5
-  crouchCeilHeight: 1.3
-  ledgeReleaseTimeout: 2.5
 --- !u!114 &6650432633027884998
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1421,7 +1375,7 @@ MonoBehaviour:
   m_IgnoreFromBuild: 1
   m_ApplyToChildren: 1
   m_AffectedAgents: ffffffff
---- !u!114 &652188543435298410
+--- !u!114 &3415193239545917246
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1430,11 +1384,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 6650432633027884458}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bfc6c77c098864499af0bb0a6a05a4c, type: 3}
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SlipAwarePlayerInputManager
-  actions: {fileID: 0}
---- !u!114 &2848334687171170724
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 991392918
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &754425043687724578
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1443,11 +1409,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 6650432633027884458}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bfc6c77c098864499af0bb0a6a05a4c, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d7ca16922709ec4f910c3353f666840, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SlipAwarePlayerInputManager
-  actions: {fileID: 0}
---- !u!114 &7248487730141842086
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.NetworkedHealth
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &353803238368158551
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1456,10 +1422,83 @@ MonoBehaviour:
   m_GameObject: {fileID: 6650432633027884458}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bfc6c77c098864499af0bb0a6a05a4c, type: 3}
+  m_Script: {fileID: 11500000, guid: 0fcf106418a8bbd4f8236cdc28d9a2ea, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SlipAwarePlayerInputManager
-  actions: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.NetworkRespawner
+  ShowTopMostFoldoutHeaderGroup: 1
+  respawnDelay: 2
+--- !u!114 &9218200796089741905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6650432633027884458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a25f975b2c3fe6c448a51396a967dfb7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.RaceBotBrain
+  ShowTopMostFoldoutHeaderGroup: 1
+  difficulty: 0
+  arrivalRadius: 3.5
+  obstacleCheckDist: 2.2
+  sideRayAngle: 35
+  wallJumpHeight: 1.5
+  gapProbeDistance: 1.8
+  gapProbeDepth: 3.5
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 4294967291
+  stuckCheckInterval: 0.6
+  stuckMoveThreshold: 0.25
+  backUpDuration: 0.55
+--- !u!114 &9218200796089741906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6650432633027884458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc614990b44091c4ab34530dd4ed131b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.PlayerPowerUpInventory
+  ShowTopMostFoldoutHeaderGroup: 1
+  bananaPeelPrefab: {fileID: 7963358822108837248, guid: 0f0da63090b0c9b4eb426d9c196e3560,
+    type: 3}
+  decoyBoxPrefab: {fileID: 8524915466210177107, guid: ae5053b86d861fe4a874bd10b72e078d,
+    type: 3}
+  rocketProjectilePrefab: {fileID: 3789027560007304932, guid: 548e336ec9cc3584993d516d4af664bd,
+    type: 3}
+  freezeDuration: 10
+  bananaSlipDuration: 2
+--- !u!114 &9218200796089741907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6650432633027884458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 148a04dffac1f6343bf5907efbd62d73, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.StunEffect
+--- !u!114 &9218200796089741908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6650432633027884458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac001b251903e9f43b2c8bac58a9df56, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SlipEffect
+  slideSpeed: 10
 --- !u!1 &7103543676289522692
 GameObject:
   m_ObjectHideFlags: 0

@@ -12294,6 +12294,7 @@ GameObject:
   - component: {fileID: 7327779664052897875}
   - component: {fileID: 6684022303180929847}
   - component: {fileID: 127230566906119117}
+  - component: {fileID: 8692535248926486980}
   m_Layer: 0
   m_Name: BrunoPlayer
   m_TagString: Untagged
@@ -13035,6 +13036,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac001b251903e9f43b2c8bac58a9df56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SlipEffect
+  slideSpeed: 10
 --- !u!114 &7327779664052897875
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13055,6 +13057,7 @@ MonoBehaviour:
   rocketProjectilePrefab: {fileID: 3789027560007304932, guid: 548e336ec9cc3584993d516d4af664bd,
     type: 3}
   freezeDuration: 10
+  bananaSlipDuration: 2
 --- !u!114 &6684022303180929847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13081,6 +13084,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SlipAwarePlayerInputManager
   actions: {fileID: -944628639613478452, guid: 6b99b82d3ff7bfd4199643130476cdf4, type: 3}
+--- !u!114 &8692535248926486980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180447016402789145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 056b713ecb852f3419d1fbf1a324a168, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.InvisibilityEffect
+  glassMaterial: {fileID: 2100000, guid: 300be848849c54b40b6464ccc1849f26, type: 2}
 --- !u!1 &4180823440820865628
 GameObject:
   m_ObjectHideFlags: 0

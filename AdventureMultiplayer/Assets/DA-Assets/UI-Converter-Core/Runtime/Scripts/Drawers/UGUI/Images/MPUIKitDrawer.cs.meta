@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: c2bef7dba345a354d9275e0887be0646
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Drawers/UGUI/Images/MPUIKitDrawer.cs
+  uploadId: 960946

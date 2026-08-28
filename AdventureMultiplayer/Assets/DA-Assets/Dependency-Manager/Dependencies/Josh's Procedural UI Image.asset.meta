@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: f5922d80a28b17d4ea8cb99349db8a3e
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Dependency-Manager/Dependencies/Josh's Procedural UI
+    Image.asset
+  uploadId: 960946

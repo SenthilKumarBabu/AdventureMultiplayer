@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 891d36dc65e2abb49a192ef3a2caa83f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Dependency-Manager/Dependencies/Unity.VectorGraphics.asset
+  uploadId: 960946

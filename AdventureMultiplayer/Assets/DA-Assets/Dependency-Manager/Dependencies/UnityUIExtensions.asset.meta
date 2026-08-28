@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 92c43c5ccea4cf94da40a9a576bfebb7
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Dependency-Manager/Dependencies/UnityUIExtensions.asset
+  uploadId: 960946

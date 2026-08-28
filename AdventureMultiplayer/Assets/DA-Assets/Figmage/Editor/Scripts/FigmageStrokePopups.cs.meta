@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 795ae149e0a5d784e92dbf9bd315e55f
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Figmage/Editor/Scripts/FigmageStrokePopups.cs
+  uploadId: 960946

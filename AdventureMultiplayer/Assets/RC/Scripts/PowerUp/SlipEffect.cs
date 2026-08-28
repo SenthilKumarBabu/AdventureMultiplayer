@@ -6,47 +6,65 @@ namespace AdventureMultiplayer
     /// <summary>
     /// Applied when a player hits a Banana Peel.
     ///
-    /// Movement restriction works in two layers:
-    ///   1. SlipAwarePlayerInputManager (required on every player prefab) filters the raw
-    ///      input direction to forward-only before PLAYER TWO's state machine computes
-    ///      velocity — this is the primary fix.
-    ///   2. Apply() snaps any existing sideways/backward velocity to zero immediately so
-    ///      the player doesn't coast sideways on existing momentum.
+    /// On activation the player is immediately forced into CrouchPlayerState
+    /// (which triggers PLAYER TWO's own slide animation and collider resize).
+    /// SlipAwarePlayerInputManager keeps them there by returning GetCrouch()=true
+    /// and GetMovementDirection()=zero for the duration.
+    /// This script fights CrouchPlayerState's deceleration every frame so the
+    /// player glides forward at a constant speed instead of stopping.
+    /// Sets the animator bool "Is Sliding" so the controller transitions to the
+    /// Slide state (Saphy|RailGrind / Lily|Grind), set up via SlideAnimationSetup.
     ///
-    /// Add to every player prefab alongside SlipAwarePlayerInputManager.
+    /// Requires SlipAwarePlayerInputManager on the same prefab.
     /// </summary>
     [AddComponentMenu("Rush Champions/Slip Effect")]
     public class SlipEffect : MonoBehaviour
     {
+        [Tooltip("Forward speed held constant during the slide (units/sec). " +
+                 "Must be >= PlayerStats.minSpeedToSlide or the slide animation won't trigger.")]
+        [SerializeField] private float slideSpeed = 10f;
+
         public bool IsSlipping => _slipping;
 
         private Player               _player;
         private AIPlayerInputManager _aiInput;
+        private Animator             _animator;
         private bool                 _slipping;
         private float                _endTime;
+
+        private static readonly int IsSlidingHash = Animator.StringToHash("Is Sliding");
 
         private void Awake()
         {
             _player  = GetComponent<Player>();
             _aiInput = GetComponent<AIPlayerInputManager>();
+
+            // PlayerAnimator exposes the model's Animator; fall back to a child search.
+            var pa = GetComponent<PlayerAnimator>();
+            _animator = pa != null ? pa.animator : GetComponentInChildren<Animator>();
         }
 
-        /// <summary>Activate slip for <paramref name="duration"/> seconds. Refreshes if already active.</summary>
+        /// <summary>Activate the banana-peel slide for <paramref name="duration"/> seconds.</summary>
         public void Apply(float duration)
         {
             _slipping = true;
             _endTime  = Time.time + duration;
 
-            // Immediately snap any sideways / backward velocity to zero so the player
-            // doesn't coast in the wrong direction while the input filter takes over.
             if (_player != null && _player.enabled)
             {
-                var forward = _player.localForward;
-                float dot   = Vector3.Dot(_player.lateralVelocity, forward);
-                _player.lateralVelocity = dot > 0f ? forward * dot : Vector3.zero;
+                // Set velocity first so OnEnter's HandleSlideStart sees speed >= minSpeedToSlide
+                // and fires the slide animation (instead of zeroing velocity).
+                _player.lateralVelocity = _player.localForward * slideSpeed;
+
+                // Force PLAYER TWO into CrouchPlayerState — shrinks collider, handles ground snap.
+                _player.states.Change<CrouchPlayerState>();
             }
 
-            Debug.Log($"[SlipEffect] {name} slipping for {duration}s.");
+            // Tell the animator to show the RailGrind/Slide animation.
+            if (_animator != null)
+                _animator.SetBool(IsSlidingHash, true);
+
+            Debug.Log($"[SlipEffect] {name} sliding for {duration}s at {slideSpeed} u/s.");
         }
 
         private void Update()
@@ -56,14 +74,21 @@ namespace AdventureMultiplayer
             if (Time.time >= _endTime)
             {
                 _slipping = false;
+                if (_animator != null)
+                    _animator.SetBool(IsSlidingHash, false);
                 return;
             }
 
-            // Cancel upward velocity while airborne — prevents jumping during slip.
-            if (_player != null && _player.enabled &&
-                _player.verticalVelocity.y > 0f && !_player.isGrounded)
+            if (_player != null && _player.enabled)
             {
-                _player.verticalVelocity = Vector3.zero;
+                // CrouchPlayerState calls Decelerate(crouchFriction) every step.
+                // Override the result so the player glides at constant speed for the full duration.
+                if (_player.isGrounded)
+                    _player.lateralVelocity = _player.localForward * slideSpeed;
+
+                // Suppress upward velocity while airborne to prevent jumping during slide.
+                if (_player.verticalVelocity.y > 0f && !_player.isGrounded)
+                    _player.verticalVelocity = Vector3.zero;
             }
 
             if (_aiInput != null)

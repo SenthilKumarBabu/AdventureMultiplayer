@@ -15,7 +15,7 @@ namespace AdventureMultiplayer
     ///
     /// On trigger contact with the target player the rocket applies a StunEffect
     /// via ApplyStunClientRpc, then despawns itself.
-    /// Shield absorbs the hit (consumed). Invincibility deflects it (not consumed).
+    /// Shield absorbs the hit (consumed). Invisible deflects it (not consumed).
     ///
     /// Prefab requirements:
     ///   - NetworkObject
@@ -29,21 +29,23 @@ namespace AdventureMultiplayer
     [AddComponentMenu("Adventure Multiplayer/Rocket Projectile")]
     public class RocketProjectile : NetworkBehaviour
     {
-        [SerializeField] private float moveSpeed    = 20f;   // units/sec
-        [SerializeField] private float turnSpeed    = 180f;  // degrees/sec
-        [SerializeField] private float maxLifetime  = 10f;   // auto-despawn after this
-        [SerializeField] private float stunDuration = 3f;
+        [SerializeField] private float moveSpeed   = 20f;   // units/sec
+        [SerializeField] private float turnSpeed   = 180f;  // degrees/sec
+        [SerializeField] private float maxLifetime = 10f;   // auto-despawn after this
 
-        private ulong     _ownerClientId;
-        private ulong     _targetClientId;
+        // NetworkObjectIds, not OwnerClientIds — bots all default to OwnerClientId 0
+        // (server-owned), so matching hits by OwnerClientId would never correctly hit
+        // (or correctly exclude) a bot. NetworkObjectId is always unique.
+        private ulong     _ownerNetworkObjectId;
+        private ulong     _targetNetworkObjectId;
         private Rigidbody _rb;
         private bool      _hit;
 
         /// <summary>Called by PlayerPowerUpInventory immediately after Spawn().</summary>
-        public void Init(ulong ownerClientId, ulong targetClientId)
+        public void Init(ulong ownerNetworkObjectId, ulong targetNetworkObjectId)
         {
-            _ownerClientId  = ownerClientId;
-            _targetClientId = targetClientId;
+            _ownerNetworkObjectId  = ownerNetworkObjectId;
+            _targetNetworkObjectId = targetNetworkObjectId;
         }
 
         public override void OnNetworkSpawn()
@@ -82,44 +84,51 @@ namespace AdventureMultiplayer
             var netObj = other.GetComponentInParent<NetworkObject>();
             if (netObj == null) return;
             // Never hit the firer, even if the rocket circles back.
-            if (netObj.OwnerClientId == _ownerClientId) return;
-            if (netObj.OwnerClientId != _targetClientId) return;
+            if (netObj.NetworkObjectId == _ownerNetworkObjectId) return;
+            if (netObj.NetworkObjectId != _targetNetworkObjectId) return;
 
             _hit = true;
 
             // Search up from the triggered collider — handles child-collider setups where
             // netObj.GetComponent would miss a root-level NetworkedHealth.
             var health = other.GetComponentInParent<NetworkedHealth>();
+            var inv    = netObj.GetComponent<PlayerPowerUpInventory>();
+            ClientRpcParams targetOnly = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams { TargetClientIds = new[] { netObj.OwnerClientId } }
+            };
 
             if (health != null && health.IsShielded)
             {
                 health.SetShield(false);
-                Debug.Log($"[RocketProjectile] Blocked by shield on client {_targetClientId}.");
+                Debug.Log($"[RocketProjectile] Blocked by shield on '{netObj.name}'.");
+                inv?.NotifyPowerUpAffectedClientRpc((int)PowerUpType.Rocket, (int)PowerUpAffectOutcome.ShieldBlocked, targetOnly);
+                if (inv != null && PlayerPowerUpInventory.All.TryGetValue(_ownerNetworkObjectId, out var blockedAttackerInv))
+                    inv.NotifyGlobalAttackClientRpc(blockedAttackerInv.RaceId, inv.RaceId, (int)PowerUpType.Rocket, (int)PowerUpAffectOutcome.ShieldBlocked);
                 Despawn();
                 return;
             }
 
-            if (health != null && health.IsInvincible)
+            if (health != null && health.IsInvisible)
             {
-                Debug.Log($"[RocketProjectile] Blocked by invincibility on client {_targetClientId}.");
+                Debug.Log($"[RocketProjectile] Blocked by Invisible on '{netObj.name}'.");
+                inv?.NotifyPowerUpAffectedClientRpc((int)PowerUpType.Rocket, (int)PowerUpAffectOutcome.InvisibleDodged, targetOnly);
+                if (inv != null && PlayerPowerUpInventory.All.TryGetValue(_ownerNetworkObjectId, out var dodgedAttackerInv))
+                    inv.NotifyGlobalAttackClientRpc(dodgedAttackerInv.RaceId, inv.RaceId, (int)PowerUpType.Rocket, (int)PowerUpAffectOutcome.InvisibleDodged);
                 Despawn();
                 return;
             }
 
-            int damage = Mathf.RoundToInt((health != null ? health.MaxHealth : 100) * 0.25f);
-            Debug.Log($"[RocketProjectile] Hit client {_targetClientId} — stun {stunDuration}s, damage {damage}, health={(health != null ? "found" : "null")}.");
+            // Kill shot: deal full max health so the target dies and respawns.
+            int damage = health != null ? health.MaxHealth : 100;
+            Debug.Log($"[RocketProjectile] Kill shot on '{netObj.name}' — damage {damage}.");
 
             if (health != null)
                 health.ApplyDamageFromPowerUp(damage, transform.position);
+            inv?.NotifyPowerUpAffectedClientRpc((int)PowerUpType.Rocket, (int)PowerUpAffectOutcome.Hit, targetOnly);
 
-            if (PlayerPowerUpInventory.All.TryGetValue(_targetClientId, out var inv))
-            {
-                var p = new ClientRpcParams
-                {
-                    Send = new ClientRpcSendParams { TargetClientIds = new[] { _targetClientId } }
-                };
-                inv.ApplyStunClientRpc(stunDuration, p);
-            }
+            if (inv != null && PlayerPowerUpInventory.All.TryGetValue(_ownerNetworkObjectId, out var attackerInv))
+                inv.NotifyGlobalAttackClientRpc(attackerInv.RaceId, inv.RaceId, (int)PowerUpType.Rocket, (int)PowerUpAffectOutcome.Hit);
 
             Despawn();
         }
@@ -128,7 +137,7 @@ namespace AdventureMultiplayer
 
         private Vector3 GetTargetDirection()
         {
-            if (!PlayerPowerUpInventory.All.TryGetValue(_targetClientId, out var inv))
+            if (!PlayerPowerUpInventory.All.TryGetValue(_targetNetworkObjectId, out var inv))
                 return transform.forward; // target gone — fly straight
 
             Vector3 toTarget = inv.transform.position - transform.position;

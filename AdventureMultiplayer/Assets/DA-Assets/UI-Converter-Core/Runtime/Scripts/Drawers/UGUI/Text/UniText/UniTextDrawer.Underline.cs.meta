@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 24a77a8876f3efc468352bdea78bbf0a
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Drawers/UGUI/Text/UniText/UniTextDrawer.Underline.cs
+  uploadId: 960946

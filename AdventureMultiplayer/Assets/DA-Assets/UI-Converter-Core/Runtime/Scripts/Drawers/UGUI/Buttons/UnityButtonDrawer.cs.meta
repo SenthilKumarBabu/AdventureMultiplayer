@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 464bdced9f5d399419493f3cdd1da157
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Drawers/UGUI/Buttons/UnityButtonDrawer.cs
+  uploadId: 960946

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 435c383e3d5e3a84a8b7c99a03c03143
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Dependency-Manager/Dependencies/D.A. Button.asset
+  uploadId: 960946

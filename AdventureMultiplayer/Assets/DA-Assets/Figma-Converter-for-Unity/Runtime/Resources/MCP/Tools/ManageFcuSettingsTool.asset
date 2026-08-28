@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79e1d46eba9b4da44858c8b09713cc33, type: 3}
+  m_Name: ManageFcuSettingsTool
+  m_EditorClassIdentifier: 
+  ToolName: manage_fcu_settings
+  ToolDescription: Agent-facing FCU settings access. Use describe to discover setting paths and enum values, get to inspect current values, and set to apply patches. Do not dump describe/get-all output to the user unless explicitly requested.
+  InstanceTypeName: DA_Assets.FCU.FigmaConverterUnity
+  InstanceLabel: FCU
+  Schema:
+    Type: object
+    Properties:
+      m_Keys:
+      - action
+      - section
+      - paths
+      - include_serialized_paths
+      - patches
+      m_Values:
+      - Type: string
+        Description: Action to run. Use describe, get, or set.
+      - Type: string
+        Description: Optional settings section, for example MainSettings, ImageSpritesSettings,
+          TextFontsSettings, UITK_Settings, or ButtonSettings.
+      - Type: array
+        Description: Optional setting paths to read. Paths usually start with Settings.
+        Items:
+          Type: string
+          Description: Setting path.
+      - Type: boolean
+        Description: For describe, include raw Unity SerializedProperty paths in addition
+          to agent-friendly reflection paths.
+      - Type: array
+        Description: For set, list of patches with path and value fields.
+        Items:
+          Type: object
+          Description: '{ "path": "Settings.MainSettings.UIFramework", "value": "UITK" }'
+    Required:
+    - action
+  ResponseTemplates:
+    m_Keys: []
+    m_Values: []

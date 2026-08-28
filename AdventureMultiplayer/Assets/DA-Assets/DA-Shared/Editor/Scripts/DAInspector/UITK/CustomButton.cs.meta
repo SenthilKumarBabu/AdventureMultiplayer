@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: e5ca53f86f8401144b13fcfb0e8a0c6f
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Shared/Editor/Scripts/DAInspector/UITK/CustomButton.cs
+  uploadId: 960946

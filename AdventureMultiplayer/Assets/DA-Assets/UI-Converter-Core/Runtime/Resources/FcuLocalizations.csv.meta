@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 76e267d64912f5c44a25b64a5d86254b
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Resources/FcuLocalizations.csv
+  uploadId: 960946

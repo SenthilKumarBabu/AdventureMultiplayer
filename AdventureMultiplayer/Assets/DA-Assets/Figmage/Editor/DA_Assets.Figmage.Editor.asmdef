@@ -1,0 +1,20 @@
+{
+    "name": "DA_Assets.Figmage.Editor",
+    "rootNamespace": "DA_Assets.Figmage",
+    "references": [
+        "DA_Assets.Figmage",
+        "GUID:1b74e700d4693d342a6732b0ca624858",
+        "GUID:a6cf5be64ada0d14782980ee615220ef"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

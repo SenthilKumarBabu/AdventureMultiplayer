@@ -23,6 +23,9 @@ namespace AdventureMultiplayer
 
         [SerializeField] private RaceCheckpoint[] checkpoints;
 
+        /// <summary>Ordered checkpoint array — read by RaceBotBrain for navigation.</summary>
+        public RaceCheckpoint[] Checkpoints => checkpoints;
+
         /// <summary>Read-only on clients — one entry per connected player.</summary>
         public NetworkList<RaceEntry> RaceEntries { get; private set; }
 
@@ -135,6 +138,16 @@ namespace AdventureMultiplayer
             m_playerTransforms.Remove(clientId);
             m_playerPositions.Remove(clientId);
         }
+
+        /// <summary>
+        /// The registered Transform for a race participant ID (an NGO client ID for a
+        /// human player, or a RaceBotBrain.BotId for a bot). Null if not registered.
+        /// Lets power-up targeting (PlayerPowerUpInventory) resolve a race-position-based
+        /// target (e.g. "player ahead") to an actual player/bot instance without needing
+        /// its own separate, bot-incompatible ID scheme.
+        /// </summary>
+        public Transform GetPlayerTransform(ulong id) =>
+            m_playerTransforms.TryGetValue(id, out var t) ? t : null;
 
         // ── Server API (called by RaceCheckpoint) ─────────────────────────────
 
@@ -460,6 +473,16 @@ namespace AdventureMultiplayer
             Debug.Log($"[RaceManager] AddEntry({clientId}) ADDED. Total entries={RaceEntries.Count}");
         }
 
+        /// <summary>
+        /// Called by RaceBotBrain on the server to register an AI bot in the race.
+        /// Bot IDs start at 10000 and are unique per bot instance.
+        /// </summary>
+        public void AddBotEntry(ulong botId)
+        {
+            if (!IsServer) return;
+            AddEntry(botId);
+        }
+
         private async UniTaskVoid HealEntryAsync(int originalIdx, ulong clientId)
         {
             // Wait a few frames so the initial staging write has a chance to commit.
@@ -570,21 +593,51 @@ namespace AdventureMultiplayer
             return int.MaxValue;
         }
 
-        /// <summary>Client directly ahead (position - 1). Returns ulong.MaxValue if caster is already 1st.</summary>
-        public ulong GetPlayerAhead(ulong casterId)
+        // A finished racer (human or bot) gets a huge fixed score bonus (see RecalculatePositions)
+        // so it always ranks above everyone still actually racing — including a bot standing idle
+        // at the finish line. GetPlayerInFirst/Ahead/Behind/NAhead used to work directly off that
+        // absolute RacePosition, so as soon as ANYONE finished, every power-up that targets "the
+        // leader" or "the racer ahead/behind" (Rocket, Swap, StunBolt) could resolve to that
+        // finished, no-longer-competing racer instead of an actual rival — confirmed as the cause
+        // of Swap targeting a bot that had already finished and was just waiting at the line.
+        // GetPlayersBehind already excluded Finished entries; these didn't. Routing all of them
+        // through this same "racing only" list fixes every targeting helper at once.
+        private List<(ulong id, int pos)> GetRacingOnly()
         {
-            int myPos = GetRacePosition(casterId);
-            if (myPos <= 1) return ulong.MaxValue;
-            return GetClientAtPosition(myPos - 1);
+            var list = new List<(ulong id, int pos)>();
+            for (int i = 0; i < RaceEntries.Count; i++)
+                if (!RaceEntries[i].Finished)
+                    list.Add((RaceEntries[i].ClientId, RaceEntries[i].RacePosition));
+            list.Sort((a, b) => a.pos.CompareTo(b.pos));
+            return list;
         }
 
-        /// <summary>Client N positions ahead of caster. Clamps to 1st place.</summary>
+        /// <summary>Client in 1st place AMONG THOSE STILL RACING. Returns ulong.MaxValue if nobody is still racing.</summary>
+        public ulong GetPlayerInFirst()
+        {
+            var racing = GetRacingOnly();
+            return racing.Count > 0 ? racing[0].id : ulong.MaxValue;
+        }
+
+        /// <summary>Still-racing client directly ahead. Returns ulong.MaxValue if caster is already
+        /// 1st among racers, has finished, or isn't racing.</summary>
+        public ulong GetPlayerAhead(ulong casterId)
+        {
+            var racing = GetRacingOnly();
+            int idx = racing.FindIndex(r => r.id == casterId);
+            if (idx <= 0) return ulong.MaxValue;
+            return racing[idx - 1].id;
+        }
+
+        /// <summary>Still-racing client N positions ahead of caster. Clamps to 1st place among racers.</summary>
         public ulong GetPlayerNAhead(ulong casterId, int n)
         {
-            int myPos    = GetRacePosition(casterId);
-            int target   = Mathf.Max(1, myPos - n);
-            if (target == myPos) return ulong.MaxValue;
-            return GetClientAtPosition(target);
+            var racing = GetRacingOnly();
+            int idx = racing.FindIndex(r => r.id == casterId);
+            if (idx < 0) return ulong.MaxValue;
+            int target = Mathf.Max(0, idx - n);
+            if (target == idx) return ulong.MaxValue;
+            return racing[target].id;
         }
 
         /// <summary>
@@ -614,14 +667,37 @@ namespace AdventureMultiplayer
             m_serverCheckpointIndex[clientA] = tmpIdxB;
             m_serverCheckpointIndex[clientB] = tmpIdx;
 
+            // Whichever of the two just got rewound to a LOWER checkpoint index needs to
+            // physically re-cross the checkpoints between their new and old index to advance
+            // again — but each RaceCheckpoint's own m_passedOwners dedup guard already marked
+            // them as having passed those from their original, forward crossing, so re-entering
+            // the same trigger would otherwise be silently swallowed and their tracked position
+            // would never recover. Un-dedupe both directions unconditionally rather than
+            // figuring out which one actually needs it — harmless no-op for whichever side
+            // doesn't (RegisterCheckpoint's own monotonic guard still no-ops a redundant re-fire).
+            ClearPassedBeyond(clientA, entryA.CheckpointIndex);
+            ClearPassedBeyond(clientB, entryB.CheckpointIndex);
+
             Debug.Log($"[RaceManager] SwapCheckpoints: client {clientA} ↔ {clientB}.");
         }
 
-        /// <summary>Client directly behind (position + 1). Returns ulong.MaxValue if caster is last.</summary>
+        // See ClearPassed's doc comment on RaceCheckpoint for why this exists.
+        private void ClearPassedBeyond(ulong clientId, int keepUpToIndex)
+        {
+            if (checkpoints == null) return;
+            foreach (var cp in checkpoints)
+                if (cp != null && cp.index > keepUpToIndex)
+                    cp.ClearPassed(clientId);
+        }
+
+        /// <summary>Still-racing client directly behind. Returns ulong.MaxValue if caster is last
+        /// among racers, has finished, or isn't racing.</summary>
         public ulong GetPlayerBehind(ulong casterId)
         {
-            int myPos = GetRacePosition(casterId);
-            return GetClientAtPosition(myPos + 1);
+            var racing = GetRacingOnly();
+            int idx = racing.FindIndex(r => r.id == casterId);
+            if (idx < 0 || idx >= racing.Count - 1) return ulong.MaxValue;
+            return racing[idx + 1].id;
         }
 
         /// <summary>All clients with a higher position number (further behind) than the caster.</summary>
@@ -635,12 +711,5 @@ namespace AdventureMultiplayer
             return result;
         }
 
-        private ulong GetClientAtPosition(int position)
-        {
-            for (int i = 0; i < RaceEntries.Count; i++)
-                if (RaceEntries[i].RacePosition == position)
-                    return RaceEntries[i].ClientId;
-            return ulong.MaxValue;
-        }
     }
 }

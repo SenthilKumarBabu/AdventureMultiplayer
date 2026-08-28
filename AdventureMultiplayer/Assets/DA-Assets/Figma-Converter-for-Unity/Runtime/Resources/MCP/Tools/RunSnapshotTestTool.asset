@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7a9b1c2d3e4567890abcdef12345680, type: 3}
+  m_Name: RunSnapshotTestTool
+  m_EditorClassIdentifier: 
+  ToolName: run_snapshot_test
+  ToolDescription: Runs a snapshot test comparing the current scene hierarchy against
+    a saved baseline. Returns a compact diff report showing only deviations.
+  InstanceTypeName: DA_Assets.FCU.FigmaConverterUnity
+  InstanceLabel: FCU
+  Schema:
+    Type: object
+    Properties:
+      m_Keys:
+      - baseline
+      m_Values:
+      - Type: string
+        Description: Name of the baseline to compare against. If empty, uses the
+          currently selected baseline.
+    Required: []
+  ResponseTemplates:
+    m_Keys:
+    - error_no_root
+    - error_no_baseline
+    - error_baseline_not_found
+    m_Values:
+    - 'Error: Root Frame is not assigned in SnapshotSettings. Please assign it in
+      the Snapshot tab first.'
+    - 'Error: No baseline selected. Please select a baseline in the Snapshot tab or
+      pass a "baseline" argument.'
+    - 'Error: Baseline "{0}" not found. Available baselines: {1}'
+    rowCount: 20

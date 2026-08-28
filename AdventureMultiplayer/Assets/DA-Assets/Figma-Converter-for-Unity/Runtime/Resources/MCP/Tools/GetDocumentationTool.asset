@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa6ba371f0eebb94abbe704c7e5f7878, type: 3}
+  m_Name: GetDocumentationTool
+  m_EditorClassIdentifier: 
+  ToolName: get_documentation
+  ToolDescription: Fetches D.A. Assets documentation. Call without arguments to get
+    documentation structure (list of all sections). Call with 'url' argument to get
+    content of a specific page.
+  InstanceTypeName: DA_Assets.FCU.FigmaConverterUnity
+  InstanceLabel: FCU
+  Schema:
+    Type: object
+    Properties:
+      m_Keys:
+      - url
+      m_Values:
+      - Type: string
+        Description: Optional URL of the documentation page. If omitted, returns
+          the documentation structure (list of all sections). If provided, returns
+          the content of that page.
+    Required: []
+  ResponseTemplates:
+    m_Keys: []
+    m_Values: []

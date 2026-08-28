@@ -16602,6 +16602,8 @@ GameObject:
   - component: {fileID: 8234134589946515575}
   - component: {fileID: 7880145588409774806}
   - component: {fileID: 422677172258433266}
+  - component: {fileID: 4160175986507440334}
+  - component: {fileID: 3259925508662787800}
   m_Layer: 0
   m_Name: BlazePlayer
   m_TagString: Untagged
@@ -17330,6 +17332,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac001b251903e9f43b2c8bac58a9df56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SlipEffect
+  slideSpeed: 10
 --- !u!114 &8234134589946515575
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17350,6 +17353,7 @@ MonoBehaviour:
   rocketProjectilePrefab: {fileID: 3789027560007304932, guid: 548e336ec9cc3584993d516d4af664bd,
     type: 3}
   freezeDuration: 10
+  bananaSlipDuration: 2
 --- !u!114 &7880145588409774806
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17376,6 +17380,32 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.SlipAwarePlayerInputManager
   actions: {fileID: -944628639613478452, guid: 6b99b82d3ff7bfd4199643130476cdf4, type: 3}
+--- !u!114 &4160175986507440334
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180447016402789145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 056b713ecb852f3419d1fbf1a324a168, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.InvisibilityEffect
+  glassMaterial: {fileID: 2100000, guid: 300be848849c54b40b6464ccc1849f26, type: 2}
+--- !u!114 &3259925508662787800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180447016402789145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8447eabe41f5894592ad3bf22c8fec4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdventureMultiplayer.BlazeCooldown
+  _cooldownSeconds: 2
 --- !u!1 &4326861519637374406
 GameObject:
   m_ObjectHideFlags: 0

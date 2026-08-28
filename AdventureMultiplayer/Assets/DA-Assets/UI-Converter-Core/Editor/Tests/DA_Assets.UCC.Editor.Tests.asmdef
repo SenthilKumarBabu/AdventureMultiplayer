@@ -1,0 +1,25 @@
+{
+    "name": "DA_Assets.UCC.Editor.Tests",
+    "rootNamespace": "",
+    "references": [
+        "DA_Assets.Shared",
+        "DA_Assets.Shared.Editor",
+        "DA_Assets.UCC",
+        "DA_Assets.UCC.Editor",
+        "LightSide.UniText"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

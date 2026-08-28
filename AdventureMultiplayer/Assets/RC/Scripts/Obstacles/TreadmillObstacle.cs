@@ -53,6 +53,7 @@ namespace AdventureMultiplayer
             foreach (var player in m_players)
             {
                 if (player == null || !player.isGrounded) continue;
+                if (player.TryGetComponent<NetworkedHealth>(out var health) && health.IsInvisible) continue;
                 var posBefore = player.transform.position;
                 player.transform.position += delta;
                 Debug.Log($"[Treadmill] {name} | grounded={player.isGrounded} | delta={delta} | pos {posBefore} → {player.transform.position}");

@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: c1893e6745ed49b41a13906e61e76e32
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - gui: {fileID: 11400000, guid: a44df56cea3f6824785751338c356dd1, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Editor/Scripts/Windows/MoveToGroupPopup.cs
+  uploadId: 960946

@@ -19,23 +19,20 @@ MonoBehaviour:
   gravity: 49
   fallGravity: 65
   gravityTopSpeed: 50
-  canPickUp: 1
-  canPickUpOnAir: 0
-  canJumpWhileHolding: 1
-  throwVelocityMultiplier: 1.5
-  applySlopeFactor: 0
   applyInputMagnitude: 1
   decelerateWhenOverTopSpeed: 1
   acceleration: 16
-  deceleration: 30
   decelerationToTopSpeed: 10
   friction: 28
-  slopeFriction: 18
   minTopSpeed: 2
   topSpeed: 7.5
   turningDrag: 30
   airAcceleration: 32
+  airTurningDrag: 60
   brakeThreshold: -0.8
+  minSpeedToBrake: 5
+  deceleration: 30
+  applySlopeFactor: 0
   slopeUpwardForce: 25
   slopeDownwardForce: 28
   canRun: 1
@@ -44,18 +41,49 @@ MonoBehaviour:
   runningTopSpeed: 9
   runningTurningDrag: 14
   canJump: 1
-  multiJumps: 1
+  jumpOnNormalDirection: 0
+  multiJumps: 2
   coyoteJumpThreshold: 0.15
   maxJumpHeight: 19
   minJumpHeight: 10
+  canPickUp: 1
+  canPickUpOnAir: 0
+  canJumpWhileHolding: 1
+  throwVelocityMultiplier: 1.5
+  useHoldingTopSpeed: 0
+  holdingTopSpeed: 5
+  canRoll: 0
+  canRollOnAir: 0
+  unrollWhenFalling: 0
+  canCancelRoll: 1
+  minSpeedToRoll: 10
+  minSpeedToUnroll: 5
+  airToGroundRollFactor: 1.25
+  rollingFriction: 1
+  rollingDeceleration: 15
+  rollingTurningDrag: 14
+  rollingSlopeUpwardForce: 20
+  rollingSlopeDownwardForce: 80
+  canRollCharge: 0
+  rollChargeRequiresCrouch: 1
+  maxSpeedToRollCharge: 5
+  rollChargeDuration: 1
+  minChargeForce: 10
+  maxChargeForce: 40
+  canCrouch: 1
+  canCrouchSlide: 1
+  crouchJumpBackflip: 1
+  minSpeedToSlide: 5
   crouchHeight: 1
   crouchFriction: 10
+  minCrouchSlideDuration: 1
   canTakeFallDamage: 0
   baseFallDamage: 1
   additionalFallDamage: 1
   minFallDurationToTakeDamage: 0.5
   minFallSpeedToTakeDamage: 40
   fallDamageInterval: 0.3
+  canCrawl: 1
   crawlingAcceleration: 8
   crawlingFriction: 32
   crawlingTopSpeed: 2.5
@@ -72,6 +100,21 @@ MonoBehaviour:
   wallDragGravity: 12
   wallJumpDistance: 8
   wallJumpHeight: 16
+  canWallRun: 0
+  wallRunLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  wallRunSkinOffset: {x: 0, y: 0, z: 0}
+  wallRunMinSpeed: 10
+  wallRunMaxFallSpeed: -15
+  wallRunMinGroundDistance: 2
+  wallRunMinSpeedToFall: 5
+  wallRunBaseSpeed: 20
+  wallRunFriction: 10
+  wallRunGravity: 20
+  wallRunJumpBaseForce: 25
+  wallRunGravityDelay: 0.25
+  wallRunJumpGravityDelay: 0.5
   canPoleClimb: 1
   poleClimbSkinOffset: {x: 0, y: 0, z: 0}
   climbUpAcceleration: 6
@@ -112,7 +155,6 @@ MonoBehaviour:
   applyDiveSlopeFactor: 1
   airDiveForwardForce: 16
   airDiveFriction: 32
-  airDiveSlopeFriction: 12
   airDiveSlopeUpwardForce: 35
   airDiveSlopeDownwardForce: 40
   airDiveGroundLeapHeight: 10
@@ -158,10 +200,12 @@ MonoBehaviour:
   glidingRotationSpeed: 180
   canAirDash: 1
   canGroundDash: 1
+  snapToGroundWhenDashing: 0
   dashForce: 25
   dashDuration: 0.3
   groundDashCoolDown: 0.5
   allowedAirDashes: 1
+  canRailGrind: 1
   useCustomCollision: 1
   grindRadiusOffset: 0.26
   minGrindInitialSpeed: 10
@@ -175,3 +219,17 @@ MonoBehaviour:
   applyGrindingSlopeFactor: 1
   grindDashCoolDown: 0.5
   grindDashForce: 25
+  canHomingDash: 0
+  homingDashLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  homingDashDamage: 1
+  homingDashRadius: 15
+  homingDashSplineForwardOffset: 2
+  homingDashMaxHeightDifference: 1
+  homingDashRefreshRate: 0.2
+  homingDashMaxDuration: 2
+  homingDashForce: 30
+  homingDashRecoverForce: 15
+  homingTrickGravity: 25
+  homingTrickInvincibilityDuration: 0.2

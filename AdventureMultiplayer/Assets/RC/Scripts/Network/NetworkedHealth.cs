@@ -8,7 +8,7 @@ namespace AdventureMultiplayer
     /// Server-authoritative health and damage.
     ///
     /// The server is the single source of truth for health values. When damage is
-    /// requested (via ServerRpc), the server validates it (shield check, invincibility),
+    /// requested (via ServerRpc), the server validates it (shield check, Invisible),
     /// updates the NetworkVariable, then tells all clients to apply it to their local
     /// PLAYER TWO Health component so animations, particles and sounds fire everywhere.
     ///
@@ -30,16 +30,18 @@ namespace AdventureMultiplayer
         public NetworkVariable<bool> ShieldActive    { get; private set; } =
             new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        public NetworkVariable<bool> InvincibleActive { get; private set; } =
+        // Invisible merges the old Invincibility (damage immunity) and Invisibility
+        // (physical pass-through) power-ups into a single state.
+        public NetworkVariable<bool> InvisibleActive { get; private set; } =
             new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private Health m_health;
-        private bool   m_shieldActive;
-        private bool   m_invincibleActive;
 
-        public bool IsShielded   => m_shieldActive;
-        public bool IsInvincible => m_invincibleActive;
-        public int  MaxHealth    => m_health != null ? m_health.max : 100;
+        // Read directly from the NetworkVariables (not a mirrored local bool) so the
+        // correct value is visible on every peer, not just the server that writes it.
+        public bool IsShielded  => ShieldActive.Value;
+        public bool IsInvisible => InvisibleActive.Value;
+        public int  MaxHealth   => m_health != null ? m_health.max : 100;
 
         public override void OnNetworkSpawn()
         {
@@ -71,13 +73,22 @@ namespace AdventureMultiplayer
         [ServerRpc(RequireOwnership = false)]
         public void TakeDamageServerRpc(int damage, Vector3 origin)
         {
-            if (m_invincibleActive)
+            if (InvisibleActive.Value)
             {
-                Debug.Log($"[NetworkedHealth] Invincibility blocked hit for client {OwnerClientId}.");
+                Debug.Log($"[NetworkedHealth] Invisible blocked hit for client {OwnerClientId}.");
                 return;
             }
 
-            if (m_shieldActive)
+            // Same reasoning as NetworkKillZone: a hazard sitting close to a checkpoint/spawn
+            // point can otherwise re-kill the player the instant they respawn, looping forever.
+            var respawner = GetComponent<NetworkRespawner>();
+            if (respawner != null && respawner.IsRespawnProtected)
+            {
+                Debug.Log($"[NetworkedHealth] Respawn-protected — hit ignored for client {OwnerClientId}.");
+                return;
+            }
+
+            if (ShieldActive.Value)
             {
                 SetShield(false);
                 Debug.Log($"[NetworkedHealth] Shield absorbed hit for client {OwnerClientId}.");
@@ -106,9 +117,17 @@ namespace AdventureMultiplayer
             int newHealth = Mathf.Max(0, Health.Value - damage);
             Health.Value  = newHealth;
 
-            // Replicate to all clients so the local Health component and any HUD listening to
-            // it also update. Uses Set() not Damage() to skip PLAYER TWO's recovery cooldown.
+            // Broadcast new health to all clients so HUD / health bar update everywhere.
             ForceSetHealthClientRpc(newHealth, origin);
+
+            // If this is a kill shot, tell ONLY the owning client to enter DiePlayerState.
+            // The owner has the NetworkRespawner listener; forcing die on all clients
+            // would leave non-owners stuck in death with nobody to call Respawn().
+            if (newHealth <= 0)
+                TriggerOwnerDeathClientRpc(new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams { TargetClientIds = new[] { OwnerClientId } }
+                });
 
             Debug.Log($"[NetworkedHealth] Power-up damage {damage} → client {OwnerClientId} HP {newHealth}");
         }
@@ -122,18 +141,51 @@ namespace AdventureMultiplayer
             Debug.Log($"[NetworkedHealth] ForceSetHealth {value} on client {OwnerClientId}");
         }
 
+        /// <summary>
+        /// Sent only to the owner client when killed by a power-up.
+        /// player.Die() fires playerEvents.OnDie → NetworkRespawner starts the respawn timer.
+        /// DiePlayerState is then forced to freeze the player during the delay.
+        /// NOTE: DiePlayerState.OnEnter is empty in PLAYER TWO — it does NOT fire OnDie itself.
+        /// </summary>
+        [ClientRpc]
+        private void TriggerOwnerDeathClientRpc(ClientRpcParams _ = default)
+        {
+            var player = GetComponent<Player>();
+            if (player == null) return;
+
+            player.Die();                              // fires playerEvents.OnDie → NetworkRespawner
+            player.states.Change<DiePlayerState>();    // freeze visually during respawn delay
+
+            Debug.Log($"[NetworkedHealth] TriggerOwnerDeath on client {OwnerClientId}");
+        }
+
+        /// <summary>
+        /// Called by NetworkRespawner on the owner after player.Respawn() restores health locally.
+        /// Calling m_health.Set() on the server fires onChange → OnHealthComponentChanged which
+        /// updates Health.Value, keeping the server state consistent. ForceSetHealthClientRpc
+        /// then propagates the restored value to every client's HUD.
+        /// </summary>
+        [ServerRpc(RequireOwnership = false)]
+        public void SyncRespawnHealthServerRpc()
+        {
+            if (!IsServer || m_health == null) return;
+            // Set on server first so OnHealthComponentChanged sees curr==max (no spurious damage RPC).
+            m_health.Set(m_health.max);
+            // Explicitly sync to all clients so their HUD updates immediately.
+            ForceSetHealthClientRpc(m_health.max, transform.position);
+            Debug.Log($"[NetworkedHealth] Respawn health sync: {m_health.max} for client {OwnerClientId}");
+        }
+
         /// <summary>Activate/deactivate shield. Replicates state to all clients via ShieldActive NetworkVariable.</summary>
         public void SetShield(bool active)
         {
-            m_shieldActive = active;
             if (IsServer) ShieldActive.Value = active;
         }
 
-        /// <summary>Activate/deactivate invincibility. Replicates state to all clients via InvincibleActive NetworkVariable.</summary>
-        public void SetInvincible(bool active)
+        /// <summary>Activate/deactivate Invisible. Replicates state to all clients via InvisibleActive NetworkVariable.</summary>
+        public void SetInvisible(bool active)
         {
-            m_invincibleActive = active;
-            if (IsServer) InvincibleActive.Value = active;
+            if (IsServer) InvisibleActive.Value = active;
         }
 
         // ── ClientRpcs ────────────────────────────────────────────────────────
@@ -173,6 +225,16 @@ namespace AdventureMultiplayer
             int curr = m_health.current;
 
             if (curr == prev) return;
+
+            // Enemy.ContactAttack and ObstacleKnockback call player.ApplyDamage directly,
+            // bypassing TakeDamageServerRpc entirely, so Invisible can't be checked
+            // before the hit lands. Undo it here instead — same net effect, one frame late.
+            if (curr < prev && InvisibleActive.Value)
+            {
+                m_health.Set(prev);
+                Debug.Log($"[NetworkedHealth] Invisible reverted external damage for client {OwnerClientId}.");
+                return;
+            }
 
             Health.Value = curr;
 

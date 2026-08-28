@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: c1052ac56e4326b43b542dd6585ed866
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Data/Prefabs/PrefabStruct.cs
+  uploadId: 960946

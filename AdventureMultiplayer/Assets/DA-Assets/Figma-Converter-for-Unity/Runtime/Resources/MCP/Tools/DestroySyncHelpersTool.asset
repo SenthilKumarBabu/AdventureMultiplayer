@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7a9b1c2d3e4567890abcdef12345693, type: 3}
+  m_Name: DestroySyncHelpersTool
+  m_EditorClassIdentifier: 
+  ToolName: destroy_sync_helpers
+  ToolDescription: Destroys all SyncHelper components under the selected FigmaConverterUnity instance current canvas.
+  InstanceTypeName: DA_Assets.FCU.FigmaConverterUnity
+  InstanceLabel: FCU
+  Schema:
+    Type: object
+    Properties:
+      m_Keys: []
+      m_Values: []
+      rowCount: 1
+    Required: []
+  ResponseTemplates:
+    m_Keys:
+    - success
+    m_Values:
+    - Destroyed {0} SyncHelpers under FCU instance {1}.
+    rowCount: 1

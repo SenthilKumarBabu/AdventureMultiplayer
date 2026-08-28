@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7d1af551e0f901a4d8cb27c2e1337bfb
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Figma-Converter-for-Unity/Runtime/Resources/MCP/Figma_Converter_for_Unity.asset
+  uploadId: 960946

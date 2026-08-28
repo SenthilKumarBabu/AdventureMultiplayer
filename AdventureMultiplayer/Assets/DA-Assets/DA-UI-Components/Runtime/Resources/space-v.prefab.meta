@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 5fb1c82f2408faf46be63a7a2bac7e51
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-UI-Components/Runtime/Resources/space-v.prefab
+  uploadId: 960946

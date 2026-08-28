@@ -1,0 +1,42 @@
+{
+    "name": "DA_Assets.UCC",
+    "rootNamespace": "",
+    "references": [
+        "GUID:1b74e700d4693d342a6732b0ca624858",
+        "GUID:8c42ea1385094118b2cd7f5acd8af412",
+        "GUID:18f4a329dd82a544b9708a339d2ef8c9",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:f9cd9e9bba6388d4b905abfb8656e75e",
+        "GUID:a8543565a6048b044bb579d2c50c55d3",
+        "GUID:20d7c11c9c91aa4428ccd059506c1f18",
+        "GUID:cf414061cae3a954baf92763590f3127",
+        "GUID:3f2527220f3101d41befe04ed02d001f",
+        "GUID:98f12ba59803bd744bc98c85f0722762",
+        "GUID:cccad7557df7fb944ad2c8ce3e78599c",
+        "GUID:7ab3663edede26740845931880bf22af",
+        "GUID:552447fb6cdb3d34b969d73c1b33b7d8",
+        "GUID:d3646cb6c22de2d4e9ab342c87024f8e",
+        "GUID:68550284b645f4b9894995579f34290a",
+        "GUID:720d33f97ce5b450cbb9c9941462dee9",
+        "GUID:5b70f83da6937434491f26e0fd0cd099",
+        "GUID:c0e37c852e10dfe468c75334a7f08d3a",
+        "GUID:6572381e8157783499bf6ce8f56b9292",
+        "GUID:016eaa710b675c144b35d3c84b68dcf5",
+        "GUID:1fbc052e3ea2ff24b8874f1cedb59b6c",
+        "GUID:95514529b8149ad419ca580c240d5cf2",
+        "GUID:83f70e8fc70c46a7b530f806598ff395",
+        "GUID:9d3b246372b3cc3478707b598de1f154",
+        "GUID:a8a4f76447f34a16b9e4f4a2a6e02137"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

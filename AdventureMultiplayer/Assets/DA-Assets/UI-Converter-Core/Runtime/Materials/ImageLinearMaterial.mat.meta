@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 41bc1ce8da9e87a4fa340d902394e0df
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Materials/ImageLinearMaterial.mat
+  uploadId: 960946

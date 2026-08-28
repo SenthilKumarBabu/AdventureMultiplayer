@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a26d76a13d2336b4d97c9c100dab0241, type: 3}
+  m_Name: SharedConfig
+  m_EditorClassIdentifier: DA_Assets.Shared::DA_Assets.Shared.SharedConfig
+  productVersion: 24
+  localizator:
+    locFile: {fileID: 4900000, guid: 6f7b7019ff866cb4b8a987b53fa0e393, type: 3}
+    _language: 0
+  isLanguageInitialized: 1
+  _pythonProxyTemplate: {fileID: 4900000, guid: 02f61173ede7e324ba92a65806f5a5e3, type: 3}
+  _useTestChangelog: 0
+  _changelogTestJson: {fileID: 4900000, guid: 2389c736579241c285cff807c75e71ca, type: 3}
+  _pythonCommand: python
+  docsGetterSettings:
+    PythonDocsGetter: {fileID: 102900000, guid: 78b3191095cf2ac4c87386307026da30, type: 3}
+    CacheExpiryHours: 24
+    UserAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
+      like Gecko) Chrome/143.0.0.0 Safari/537.36
+    TimeoutSeconds: 30
+    CacheEnabled: 1
+  _defaultLlmProviderConfig: {fileID: 0}

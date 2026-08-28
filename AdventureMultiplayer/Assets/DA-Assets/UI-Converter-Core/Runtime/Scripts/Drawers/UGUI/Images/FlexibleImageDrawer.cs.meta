@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: b97dd742bded2884ea32e8a1409ecadd
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Drawers/UGUI/Images/FlexibleImageDrawer.cs
+  uploadId: 960946

@@ -1,0 +1,14 @@
+﻿fileFormatVersion: 2
+guid: e2e399d69c63473ea37ddfa06abd4b7b
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Mcp-Server/Server/src/da_mcp_server/services/sub_server_manager.py
+  uploadId: 960946

@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: a8c6cdf8752c4ff4ea9eb58471654b41
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Infrastructure/Attributes/ReasonGroupAttribute.cs
+  uploadId: 960946

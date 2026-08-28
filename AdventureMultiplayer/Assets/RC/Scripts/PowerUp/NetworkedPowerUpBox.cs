@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using PLAYERTWO.PlatformerProject;
 using Unity.Netcode;
 using UnityEngine;
@@ -16,7 +17,7 @@ namespace AdventureMultiplayer
     /// Box type determines which power-ups can drop:
     ///   Yellow — SpeedBoost, Banana, DecoyBox  (safe / positional)
     ///   Red    — Rocket, StunBolt, Swap, Freeze (offensive)
-    ///   Green  — Shield, Invincibility          (defensive)
+    ///   Green  — Shield, Invisible (defensive)
     ///
     /// Setup:
     ///   - Add NetworkObject + trigger Collider + this component.
@@ -38,16 +39,27 @@ namespace AdventureMultiplayer
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
+        /// <summary>Whether this box currently has a power-up to give (not hidden/on cooldown).</summary>
+        public bool IsActive => m_Active.Value;
+
+        /// <summary>
+        /// Every spawned box in the scene, server + client. Lets bot AI (RaceBotBrain) find
+        /// nearby boxes to steer toward without an expensive scene-wide search every frame.
+        /// </summary>
+        public static readonly List<NetworkedPowerUpBox> All = new();
+
         // ── Lifecycle ─────────────────────────────────────────────────────────
 
         public override void OnNetworkSpawn()
         {
+            All.Add(this);
             m_Active.OnValueChanged += OnActiveChanged;
             ApplyActiveState(m_Active.Value);
         }
 
         public override void OnNetworkDespawn()
         {
+            All.Remove(this);
             m_Active.OnValueChanged -= OnActiveChanged;
         }
 
@@ -61,11 +73,15 @@ namespace AdventureMultiplayer
             if (netObj == null) return;
             if (other.GetComponentInParent<Player>() == null) return;
 
-            ulong clientId = netObj.OwnerClientId;
-
-            if (!PlayerPowerUpInventory.All.TryGetValue(clientId, out var inv))
+            // Look up the inventory directly on the colliding NetworkObject rather than
+            // through PlayerPowerUpInventory.All by OwnerClientId — bots all default to
+            // OwnerClientId 0 (server-owned), so a clientId-keyed lookup here would
+            // route a bot's pickup into whichever inventory registered last under that
+            // same key (often the human host's), instead of the bot's own.
+            var inv = netObj.GetComponent<PlayerPowerUpInventory>();
+            if (inv == null)
             {
-                Debug.Log($"[PowerUpBox] Client {clientId} has no inventory — skipping.");
+                Debug.Log($"[PowerUpBox] '{netObj.name}' has no PlayerPowerUpInventory — skipping.");
                 return;
             }
 
@@ -73,7 +89,7 @@ namespace AdventureMultiplayer
 
             if (added)
             {
-                Debug.Log($"[PowerUpBox] Client {clientId} got {powerUpType}.");
+                Debug.Log($"[PowerUpBox] '{netObj.name}' (NetworkObjectId={netObj.NetworkObjectId}) got {powerUpType}.");
                 m_Active.Value = false;
                 RespawnAsync().Forget();
             }

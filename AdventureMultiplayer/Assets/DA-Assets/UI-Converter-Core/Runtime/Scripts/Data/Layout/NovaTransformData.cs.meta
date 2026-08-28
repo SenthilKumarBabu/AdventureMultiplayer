@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 299a2695235bb6745ac090cec0d44781
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Data/Layout/NovaTransformData.cs
+  uploadId: 960946

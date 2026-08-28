@@ -1,0 +1,34 @@
+﻿#if UNITY_EDITOR
+using DA_Assets.Extensions;
+using DA_Assets.UCC.Model;
+using System;
+using UnityEngine.UI;
+
+#pragma warning disable CS0649
+
+namespace DA_Assets.UCC.Drawers.CanvasDrawers
+{
+    [Serializable]
+    public class ContentSizeFitterDrawer : FcuBase
+    {
+        public void Draw(Node fobject)
+        {
+            switch (fobject.Style.TextAutoResize)
+            {
+                case TextAutoResize.WIDTH_AND_HEIGHT:
+                    fobject.Data.GameObject.TryAddComponent(out ContentSizeFitter csfWH);
+
+                    csfWH.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                    csfWH.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                    break;
+                case TextAutoResize.HEIGHT:
+                    fobject.Data.GameObject.TryAddComponent(out ContentSizeFitter csfH);
+
+                    csfH.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+                    csfH.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                    break;
+            }
+        }
+    }
+}
+#endif

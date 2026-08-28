@@ -1,0 +1,18 @@
+{
+    "name": "DA_Assets.ImgOverflowEditor",
+    "rootNamespace": "DA_Assets.ImgOverflow",
+    "references": [
+        "GUID:95514529b8149ad419ca580c240d5cf2"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

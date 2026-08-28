@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: bd6c9e8e57177a746803379c925c002e
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Drawers/CanvasDrawer.cs
+  uploadId: 960946

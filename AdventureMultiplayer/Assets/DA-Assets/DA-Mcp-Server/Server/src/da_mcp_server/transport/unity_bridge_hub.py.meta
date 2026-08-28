@@ -1,0 +1,14 @@
+﻿fileFormatVersion: 2
+guid: 2ec35220bf5f488085f3d9602f6ad9b8
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Mcp-Server/Server/src/da_mcp_server/transport/unity_bridge_hub.py
+  uploadId: 960946

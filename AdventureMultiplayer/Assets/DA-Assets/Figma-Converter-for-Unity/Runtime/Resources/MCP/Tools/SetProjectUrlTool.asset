@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6789012345678abcdef02, type: 3}
+  m_Name: SetProjectUrlTool
+  m_EditorClassIdentifier: 
+  ToolName: set_project_url
+  ToolDescription: Assigns the Figma project URL to the Converter.
+  InstanceTypeName: DA_Assets.FCU.FigmaConverterUnity
+  InstanceLabel: FCU
+  Schema:
+    Type: object
+    Properties:
+      m_Keys:
+      - project_url
+      m_Values:
+      - Type: string
+        Description: Figma project ID or URL.
+    Required:
+    - project_url
+  ResponseTemplates:
+    m_Keys:
+    - success
+    - error
+    m_Values:
+    - 'Project URL set to "{0}".'
+    - Invalid project URL. Please provide a valid Figma project URL or ID.

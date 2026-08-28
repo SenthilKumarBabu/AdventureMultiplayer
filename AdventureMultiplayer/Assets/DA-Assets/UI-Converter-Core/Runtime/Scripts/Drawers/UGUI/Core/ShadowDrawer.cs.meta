@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 936eaea9f88f06a4d8e153270bc0a0b3
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Drawers/UGUI/Core/ShadowDrawer.cs
+  uploadId: 960946

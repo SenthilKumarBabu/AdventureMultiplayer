@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: f7a9b1c2d3e4567890abcdef12345698
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Figma-Converter-for-Unity/Runtime/Resources/MCP/Tools/BackupActiveSceneTool.asset
+  uploadId: 960946

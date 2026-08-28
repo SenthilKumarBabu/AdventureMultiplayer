@@ -92,25 +92,41 @@ namespace AdventureMultiplayer
 
         // ── Internal ──────────────────────────────────────────────────────────
 
+        // Sourced from RaceManager.RaceEntries rather than NetworkManager.ConnectedClients —
+        // ConnectedClients only lists real network connections, so bots (ordinary
+        // server-owned NetworkObjects, never a "connected client") were silently invisible
+        // to the spectator camera. RaceEntries already carries every racer, human or bot
+        // (bots register under RaceBotBrain.BotId — see RaceBotBrain.OnNetworkSpawn), and
+        // GetPlayerTransform resolves either kind of ID to its Transform.
         private void RefreshTargets()
         {
             m_targets.Clear();
-            if (NetworkManager.Singleton == null) return;
+            if (NetworkManager.Singleton == null || RaceManager.Instance == null) return;
 
             ulong localId = NetworkManager.Singleton.LocalClientId;
-            foreach (var kv in NetworkManager.Singleton.ConnectedClients)
+            var   entries = RaceManager.Instance.RaceEntries;
+
+            for (int i = 0; i < entries.Count; i++)
             {
-                if (kv.Key == localId) continue;
-                var playerObj = kv.Value.PlayerObject;
-                if (playerObj != null)
-                    m_targets.Add(playerObj.transform);
+                var entry = entries[i];
+                if (entry.ClientId == localId) continue; // don't spectate yourself
+                if (entry.Finished) continue;             // only still-racing participants
+
+                var t = RaceManager.Instance.GetPlayerTransform(entry.ClientId);
+                if (t != null) m_targets.Add(t);
             }
         }
 
         private void Cycle(int dir)
         {
+            // Refresh first — a previously-spectated racer may have finished (or DNF'd)
+            // since the list was last built, and shouldn't stay selectable.
+            var previousTarget = m_targets.Count > 0 ? m_targets[m_index] : null;
+            RefreshTargets();
             if (m_targets.Count == 0) return;
-            m_index = (m_index + dir + m_targets.Count) % m_targets.Count;
+
+            int previousIndex = previousTarget != null ? m_targets.IndexOf(previousTarget) : -1;
+            m_index = (Mathf.Max(previousIndex, 0) + dir + m_targets.Count) % m_targets.Count;
             SetCamera(m_targets[m_index]);
             UpdateLabel();
         }
@@ -129,8 +145,10 @@ namespace AdventureMultiplayer
                 spectatingLabel.text = "Waiting for others...";
                 return;
             }
-            var netObj = m_targets[m_index].GetComponent<NetworkObject>();
-            string name = netObj != null ? $"Player {netObj.OwnerClientId}" : "Player";
+            // Use the instantiated GameObject's own name rather than OwnerClientId — bots
+            // don't have a meaningful/unique OwnerClientId (see RefreshTargets), and the
+            // prefab name ("SpikeBot", "LilyPlayer", ...) is a clearer label anyway.
+            string name = m_targets[m_index].name.Replace("(Clone)", "").Trim();
             spectatingLabel.text = $"Spectating: {name}  ({m_index + 1}/{m_targets.Count})";
         }
     }

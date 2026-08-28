@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: f7c11f7f2eebcf248b5c00383bea227f
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Shared/Runtime/Scripts/Constants/SpriteSizeConstants.cs
+  uploadId: 960946

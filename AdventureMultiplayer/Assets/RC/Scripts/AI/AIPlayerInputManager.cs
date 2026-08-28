@@ -46,6 +46,15 @@ namespace AdventureMultiplayer
         private Vector3 m_smoothedMoveDir;
         private Vector3 m_lastLookDir = Vector3.forward;
 
+        // Bot-side mirror of SlipAwarePlayerInputManager's crouch-lock behaviour. SlipEffect
+        // already drives velocity/animator directly (works fine for bots with no changes),
+        // but CrouchPlayerState's own step logic reads GetCrouch()/GetMovementDirection() —
+        // without this, a bot's own leftover steering direction from before the slip could
+        // read as non-zero movement and prematurely kick CrouchPlayerState into
+        // CrawlingState, breaking the slide exactly like it would for a human without
+        // SlipAwarePlayerInputManager.
+        private SlipEffect m_slip;
+
         private struct PendingAction
         {
             public Action fire;
@@ -64,6 +73,20 @@ namespace AdventureMultiplayer
         {
             float delay = UnityEngine.Random.Range(reactionTimeMin, reactionTimeMax);
             m_pending.Add(new PendingAction { fire = action, fireAt = Time.time + delay });
+        }
+
+        /// <summary>
+        /// Zeroes the desired AND already-smoothed movement direction immediately.
+        /// Setting desiredMoveDirection alone still leaves m_smoothedMoveDir wherever
+        /// it was mid-Lerp — GetMovementDirection() would keep returning that stale
+        /// non-zero value every frame until turnSpeed decays it toward zero (up to a
+        /// second or more for slower difficulties). Use this when the bot must stop
+        /// on the spot right now (e.g. finishing the race), not coast to a stop.
+        /// </summary>
+        public void StopImmediately()
+        {
+            desiredMoveDirection = Vector3.zero;
+            m_smoothedMoveDir    = Vector3.zero;
         }
 
         // ── Unity lifecycle ───────────────────────────────────────────────────
@@ -103,10 +126,22 @@ namespace AdventureMultiplayer
 
         // ── PlayerInputManager overrides ──────────────────────────────────────
 
-        public override Vector3 GetMovementDirection() => m_smoothedMoveDir;
+        // Zero movement direction while slipping so CrouchPlayerState's canCrawl branch
+        // never fires — same reasoning as SlipAwarePlayerInputManager.GetMovementDirection.
+        public override Vector3 GetMovementDirection() =>
+            (m_slip != null && m_slip.IsSlipping) ? Vector3.zero : m_smoothedMoveDir;
 
         public override Vector3 GetMovementCameraDirection(out float magnitude, bool localSpace = true)
         {
+            if (m_slip != null && m_slip.IsSlipping)
+            {
+                // Fallback: if the character somehow reads camera direction while slipping
+                // (e.g. briefly after the state change), drive them forward — mirrors
+                // SlipAwarePlayerInputManager's own fallback for humans.
+                magnitude = 1f;
+                return transform.forward;
+            }
+
             var dir = m_smoothedMoveDir;
             magnitude = Mathf.Clamp01(desiredMoveDirection.magnitude);
             if (dir.sqrMagnitude > 0f) dir = dir.normalized;
@@ -144,8 +179,10 @@ namespace AdventureMultiplayer
         public override bool GetDive()          => diveHeld;
         public override bool GetSpinDown()      { if (!spinQueued)         return false; spinQueued         = false; return true; }
         public override bool GetPickAndDropDown(){ if (!pickAndDropQueued) return false; pickAndDropQueued  = false; return true; }
-        public override bool GetCrouch()        => crouchHeld;
-        public override bool GetCrouchDown()    => crouchHeld;
+        // Keep the bot locked in CrouchPlayerState for the full slide duration — same
+        // reasoning as SlipAwarePlayerInputManager.GetCrouch/GetCrouchDown for humans.
+        public override bool GetCrouch()        => (m_slip != null && m_slip.IsSlipping) || crouchHeld;
+        public override bool GetCrouchDown()    => (m_slip != null && m_slip.IsSlipping) || crouchHeld;
         public override bool GetAirDiveDown()   { if (!airDiveQueued)      return false; airDiveQueued      = false; return true; }
         public override bool GetStompDown()     { if (!stompQueued)        return false; stompQueued        = false; return true; }
         public override bool GetReleaseLedgeDown(){ if (!releaseLedgeQueued) return false; releaseLedgeQueued = false; return true; }
@@ -157,7 +194,11 @@ namespace AdventureMultiplayer
         public override bool EscPressed()       => false;
 
         // Skip InputActionAsset initialization — no physical input for bots.
-        protected override void Awake()   => InitializePlayer();
+        protected override void Awake()
+        {
+            InitializePlayer();
+            m_slip = GetComponent<SlipEffect>();
+        }
         protected override void Start()   { }
         protected override void OnEnable()  { }
         protected override void OnDisable() { }

@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: e2698846fe024454385bc2b9ea6a00bf
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Shared/Runtime/Scripts/DAInspector/ProgressBarCategory.cs
+  uploadId: 960946

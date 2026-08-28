@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 1cd96464b5f772541923bad6b5a3c7cd
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Editor/Scripts/Windows/SpriteUsagePopup.cs
+  uploadId: 960946

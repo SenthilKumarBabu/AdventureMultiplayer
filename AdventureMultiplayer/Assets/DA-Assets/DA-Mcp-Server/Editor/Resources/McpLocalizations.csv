@@ -1,0 +1,61 @@
+key,en-US
+window_title,D.A. MCP
+missing_uitk,DAInspectorUITK was not found in Resources.
+header_title,D.A. MCP
+header_subtitle,MCP server for interacting with assets made by D.A. Assets.
+tab_connect,Connect
+tab_clients,Clients
+tab_instances,Instances
+tab_tools,Tools
+tab_resources,Resources
+tab_recent_calls,Recent Calls
+status_connected,Connected
+status_disconnected,Disconnected
+status_configured,CONFIGURED
+status_needs_setup,NEEDS SETUP
+status_running,Running
+status_stopped,Stopped
+status_ok,OK
+status_error,ERROR
+label_transport,Transport
+label_endpoint,Endpoint
+label_local_server,Local Server
+label_unity_bridge,Unity Bridge
+label_mcp_url,MCP URL
+label_client,Client
+label_config_path,Config Path
+label_server,Server
+label_asset_key_format,Asset key: {0} ({1})
+value_http_local,HTTP Local
+value_edit_only,Edit Only
+value_play_only,Play Only
+value_both,Both
+button_start_server,Start Server
+button_stop_server,Stop Server
+button_re_register_tools,Re-register Tools
+button_configure_all_detected_clients,Configure All Detected Clients
+button_configure,Configure
+button_open,Open
+button_copy_path,Copy
+button_copy_config,Copy Config
+button_open_mcp_control_window,Open MCP Control Window
+section_server_title,Server
+section_registered_tools_title,Registered Tools
+notice_no_tools_registered,No tools registered yet. Start the server first.
+section_client_configuration_title,Clients
+notice_no_supported_clients,No supported MCP clients are registered.
+label_manual_configuration,Manual Configuration
+section_mcp_resources_title,MCP Resources
+section_recent_calls_title,Recent Calls
+notice_no_recent_calls,No MCP tool calls recorded for this Unity connection.
+section_asset_configs_title,Asset Configs
+section_live_instances_title,Live Instances
+notice_no_instances,No IMcpInstance objects found in loaded scenes or project assets.
+format_asset_summary,{0} | {1} tools | {2} resources
+section_connection_title,Connection
+section_connection_subtitle,Local server and Unity connection status for this asset.
+section_serialized_tools_title,Serialized MCP Tools
+section_serialized_tools_subtitle,Tools declared by this asset config.
+warning_mcp_config_not_assigned,MCP server config is not assigned.
+warning_no_mcp_servers,No MCP registry is assigned in McpConfig, or the registry has no servers.
+notice_no_serialized_tools,No tools are serialized in this MCP config.

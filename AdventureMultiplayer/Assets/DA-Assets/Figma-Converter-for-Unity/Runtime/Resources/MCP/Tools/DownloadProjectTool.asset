@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6789012345678abcdef03, type: 3}
+  m_Name: DownloadProjectTool
+  m_EditorClassIdentifier: 
+  ToolName: download_project
+  ToolDescription: Downloads the Figma project.
+  InstanceTypeName: DA_Assets.FCU.FigmaConverterUnity
+  InstanceLabel: FCU
+  Schema:
+    Type: object
+    Properties:
+      m_Keys: []
+      m_Values: []
+      rowCount: 1
+    Required: []
+  ResponseTemplates:
+    m_Keys:
+    - success
+    - error
+    m_Values:
+    - 'Project download completed successfully with the result: ''{0}'''
+    - 'Project download failed with the result: ''{0}''.
+
+      DO NOT restart the
+      project download automatically, and inform the user of the reason why the download
+      stopped, without any additional explanations or recommendations.'
+    rowCount: 1

@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: f7a9b1c2d3e4567890abcdef12345682
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Editor/Scripts/Snapshot/SnapshotReportFormatter.cs
+  uploadId: 960946

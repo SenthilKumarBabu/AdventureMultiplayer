@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 880217aa55333ec4fb5cf870e2f2c9b9
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Resources/Baselines/Screen-2
+    dark_baseline.zip
+  uploadId: 960946

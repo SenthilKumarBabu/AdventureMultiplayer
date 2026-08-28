@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 7b5d8b9bcd055684d83338dda9c978b2
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Drawers/UGUI/Core/InputFieldDrawer.cs
+  uploadId: 960946

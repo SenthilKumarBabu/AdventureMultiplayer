@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6789012345678abcdef05, type: 3}
+  m_Name: SelectFramesTool
+  m_EditorClassIdentifier: 
+  ToolName: select_frames
+  ToolDescription: Sets selection state in the inspector. Returns summary of what
+    was found vs requested.
+  InstanceTypeName: DA_Assets.FCU.FigmaConverterUnity
+  InstanceLabel: FCU
+  Schema:
+    Type: object
+    Properties:
+      m_Keys:
+      - select_all
+      - pages
+      - frames
+      m_Values:
+      - Type: boolean
+        Description: If true, select all pages and frames.
+      - Type: array
+        Description: Optional list of page IDs to select. Selecting a page selects
+          all its frames.
+        Items:
+          Type: string
+      - Type: array
+        Description: Optional list of frame keys in format pageId:frameId.
+        Items:
+          Type: string
+      rowCount: 1
+    Required: []
+  ResponseTemplates:
+    m_Keys:
+    - empty
+    - select_all
+    - summary
+    - missing_pages
+    - missing_frames
+    - all_found
+    m_Values:
+    - No selectable frames found. Download the project first.
+    - Selected all pages and frames.
+    - 'Selected: {0} pages, {1} frames.'
+    - ' Missing pages: {0}.'
+    - ' Missing frames: {0}.'
+    - ' All requested items found.'
+    rowCount: 1

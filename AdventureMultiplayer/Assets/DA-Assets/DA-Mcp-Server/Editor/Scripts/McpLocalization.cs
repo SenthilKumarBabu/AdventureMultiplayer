@@ -1,0 +1,72 @@
+namespace DA_Assets.Shared.MCP
+{
+    public enum McpLocKey
+    {
+        window_title,
+        missing_uitk,
+        header_title,
+        header_subtitle,
+        tab_connect,
+        tab_clients,
+        tab_instances,
+        tab_tools,
+        tab_resources,
+        tab_recent_calls,
+        status_connected,
+        status_disconnected,
+        status_configured,
+        status_needs_setup,
+        status_running,
+        status_stopped,
+        status_ok,
+        status_error,
+        label_transport,
+        label_endpoint,
+        label_local_server,
+        label_unity_bridge,
+        label_mcp_url,
+        label_client,
+        label_config_path,
+        label_server,
+        label_asset_key_format,
+        value_http_local,
+        value_edit_only,
+        value_play_only,
+        value_both,
+        button_start_server,
+        button_stop_server,
+        button_re_register_tools,
+        button_configure_all_detected_clients,
+        button_configure,
+        button_open,
+        button_copy_path,
+        button_copy_config,
+        button_open_mcp_control_window,
+        section_server_title,
+        section_registered_tools_title,
+        notice_no_tools_registered,
+        section_client_configuration_title,
+        notice_no_supported_clients,
+        label_manual_configuration,
+        section_mcp_resources_title,
+        section_recent_calls_title,
+        notice_no_recent_calls,
+        section_asset_configs_title,
+        section_live_instances_title,
+        notice_no_instances,
+        format_asset_summary,
+        section_connection_title,
+        section_connection_subtitle,
+        section_serialized_tools_title,
+        section_serialized_tools_subtitle,
+        warning_mcp_config_not_assigned,
+        warning_no_mcp_servers,
+        notice_no_serialized_tools
+    }
+
+    public static class McpLocExtensions
+    {
+        public static string Localize(this McpLocKey key, params object[] args) =>
+            McpConfig.Instance.Localizator.GetLocalizedText(key, null, args);
+    }
+}

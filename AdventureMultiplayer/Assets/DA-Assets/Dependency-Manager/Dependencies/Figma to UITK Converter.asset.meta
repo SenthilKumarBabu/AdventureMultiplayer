@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 17544a617a7caf1468a93974006d6be3
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/Dependency-Manager/Dependencies/Figma to UITK Converter.asset
+  uploadId: 960946

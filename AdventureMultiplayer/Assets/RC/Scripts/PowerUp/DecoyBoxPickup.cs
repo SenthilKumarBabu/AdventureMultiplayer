@@ -7,7 +7,7 @@ namespace AdventureMultiplayer
     /// <summary>
     /// Server-spawned trap. Player who placed it is immune.
     /// Any other player that walks into the trigger gets the StunEffect applied on their owner client.
-    /// DecoyBox intentionally bypasses both Shield and Invincibility (active counter-play item).
+    /// DecoyBox intentionally bypasses Shield (active counter-play item), but Invisible still phases through it.
     ///
     /// Requires: NetworkObject, trigger Collider, MeshRenderer.
     /// Register this prefab in NetworkManager's NetworkPrefabs list.
@@ -18,15 +18,17 @@ namespace AdventureMultiplayer
     {
         [SerializeField] private float lifetime = 20f;
 
-        private ulong _ownerClientId;
+        // Caster's NetworkObjectId — NOT OwnerClientId, which is not unique for bots
+        // (every server-owned bot defaults to OwnerClientId 0).
+        private ulong _ownerNetworkObjectId;
         private float _stunDuration;
         private bool  _triggered;
 
         /// <summary>Called by PlayerPowerUpInventory right after Spawn().</summary>
-        public void Init(ulong ownerClientId, float stunDuration)
+        public void Init(ulong ownerNetworkObjectId, float stunDuration)
         {
-            _ownerClientId = ownerClientId;
-            _stunDuration  = stunDuration;
+            _ownerNetworkObjectId = ownerNetworkObjectId;
+            _stunDuration         = stunDuration;
         }
 
         public override void OnNetworkSpawn()
@@ -52,23 +54,46 @@ namespace AdventureMultiplayer
             var netObj = other.GetComponentInParent<NetworkObject>();
             if (netObj == null || other.GetComponentInParent<Player>() == null) return;
 
-            ulong hitterId = netObj.OwnerClientId;
+            // Immune to own box — compare by NetworkObjectId, not OwnerClientId (bots
+            // all share OwnerClientId 0, which would make every bot immune to every
+            // other bot's decoy box too).
+            if (netObj.NetworkObjectId == _ownerNetworkObjectId) return;
 
-            // Immune to own box
-            if (hitterId == _ownerClientId) return;
+            // Decoy is designed as a counter to Shield, but Invisible's physical
+            // pass-through still dodges the trap like any other obstacle.
+            var health = netObj.GetComponent<NetworkedHealth>();
+            var inv    = netObj.GetComponent<PlayerPowerUpInventory>();
+            if (health != null && health.IsInvisible)
+            {
+                Debug.Log($"[DecoyBox] '{netObj.name}' phased through the decoy box (Invisible).");
+                if (inv != null)
+                {
+                    ClientRpcParams pDodge = new ClientRpcParams
+                    {
+                        Send = new ClientRpcSendParams { TargetClientIds = new[] { netObj.OwnerClientId } }
+                    };
+                    inv.NotifyPowerUpAffectedClientRpc((int)PowerUpType.DecoyBox, (int)PowerUpAffectOutcome.InvisibleDodged, pDodge);
 
-            // Decoy bypasses Shield and Invincibility — no checks here.
+                    if (PlayerPowerUpInventory.All.TryGetValue(_ownerNetworkObjectId, out var dodgeAttackerInv))
+                        inv.NotifyGlobalAttackClientRpc(dodgeAttackerInv.RaceId, inv.RaceId, (int)PowerUpType.DecoyBox, (int)PowerUpAffectOutcome.InvisibleDodged);
+                }
+                return;
+            }
 
             _triggered = true;
-            Debug.Log($"[DecoyBox] Client {hitterId} stunned by decoy! ({_stunDuration}s)");
+            Debug.Log($"[DecoyBox] '{netObj.name}' stunned by decoy! ({_stunDuration}s)");
 
-            if (PlayerPowerUpInventory.All.TryGetValue(hitterId, out var inv))
+            if (inv != null)
             {
                 ClientRpcParams p = new ClientRpcParams
                 {
-                    Send = new ClientRpcSendParams { TargetClientIds = new[] { hitterId } }
+                    Send = new ClientRpcSendParams { TargetClientIds = new[] { netObj.OwnerClientId } }
                 };
                 inv.ApplyStunClientRpc(_stunDuration, p);
+                inv.NotifyPowerUpAffectedClientRpc((int)PowerUpType.DecoyBox, (int)PowerUpAffectOutcome.Hit, p);
+
+                if (PlayerPowerUpInventory.All.TryGetValue(_ownerNetworkObjectId, out var attackerInv))
+                    inv.NotifyGlobalAttackClientRpc(attackerInv.RaceId, inv.RaceId, (int)PowerUpType.DecoyBox, (int)PowerUpAffectOutcome.Hit);
             }
 
             GetComponent<NetworkObject>().Despawn();

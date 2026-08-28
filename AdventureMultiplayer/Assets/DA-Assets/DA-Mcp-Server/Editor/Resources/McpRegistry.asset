@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51638ed1417b4e15ac5bfb9aa11533b6, type: 3}
+  m_Name: McpRegistry
+  m_EditorClassIdentifier: 
+  servers:
+  - {fileID: 11400000, guid: 7d1af551e0f901a4d8cb27c2e1337bfb, type: 2}
+  - {fileID: 11400000, guid: 2947b59b07654ca3a53096b3c796a6f9, type: 2}

@@ -1,0 +1,23 @@
+{
+    "name": "DA_Assets.Figmage.Editor.Tests",
+    "rootNamespace": "DA_Assets.Figmage.Tests",
+    "references": [
+        "DA_Assets.Figmage",
+        "DA_Assets.Figmage.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

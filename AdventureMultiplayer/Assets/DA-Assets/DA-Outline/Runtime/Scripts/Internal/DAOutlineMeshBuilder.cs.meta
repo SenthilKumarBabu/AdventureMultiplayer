@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 643834a785f94a7c84f86afd96176b05
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/DA-Outline/Runtime/Scripts/Internal/DAOutlineMeshBuilder.cs
+  uploadId: 960946

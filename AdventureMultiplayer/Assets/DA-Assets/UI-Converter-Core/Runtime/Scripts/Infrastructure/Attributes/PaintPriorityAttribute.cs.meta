@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: aa800b8053a516044b19668e55e95eff
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198134
+  packageName: Figma Converter for Unity
+  packageVersion: 7.5.1
+  assetPath: Assets/DA-Assets/UI-Converter-Core/Runtime/Scripts/Infrastructure/Attributes/PaintPriorityAttribute.cs
+  uploadId: 960946
