@@ -27,7 +27,7 @@ namespace AdventureMultiplayer
         private const string k_ReadyMsg      = "LobbyReady";
         private const string k_ReadyCountMsg = "LobbyReadyCount";
 
-        private static readonly string[] k_levelNames = { "Level 1", "Level 2", "Level 3", "Obstacle L1" };
+        private static readonly string[] k_levelNames = { "Level 1", "Level 2", "Level 3" };
         private static readonly string[] k_charNames  = { "Gale", "Blaze", "Bolt", "Bruno", "Spike" };
 
         private bool   m_gameLocked;
@@ -58,7 +58,6 @@ namespace AdventureMultiplayer
         [SerializeField] private Button level1Button;
         [SerializeField] private Button level2Button;
         [SerializeField] private Button level3Button;
-        [SerializeField] private Button level4Button;
 
         [Header("Bots")]
         [SerializeField] private Toggle botsEnabledToggle;
@@ -86,7 +85,6 @@ namespace AdventureMultiplayer
             if (level1Button != null) level1Button.onClick.AddListener(() => SelectLevel("DeathRunL1",  0));
             if (level2Button != null) level2Button.onClick.AddListener(() => SelectLevel("DeathRunL2",  1));
             if (level3Button != null) level3Button.onClick.AddListener(() => SelectLevel("DeathRunL3",  2));
-            if (level4Button != null) level4Button.onClick.AddListener(() => SelectLevel("ObstacleL1",  3));
 
             if (botsEnabledToggle  != null) botsEnabledToggle.onValueChanged.AddListener(OnBotsEnabledChanged);
 
@@ -140,21 +138,20 @@ namespace AdventureMultiplayer
 
             SetStatus("Creating relay…");
             Allocation allocation;
-            try { allocation = await RelayService.Instance.CreateAllocationAsync(MaxConnections); }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"[LobbyManager] CreateAllocation failed: {e.Message}");
-                SetStatus("Relay error — check console.");
-                SetButtonsInteractable(true);
-                return;
-            }
-
             string joinCode;
-            try { joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId); }
+            try
+            {
+                allocation = await WithRetryAsync(
+                    () => RelayService.Instance.CreateAllocationAsync(MaxConnections).AsUniTask(),
+                    "CreateAllocation");
+                joinCode = await WithRetryAsync(
+                    () => RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId).AsUniTask(),
+                    "GetJoinCode");
+            }
             catch (System.Exception e)
             {
-                Debug.LogError($"[LobbyManager] GetJoinCode failed: {e.Message}");
-                SetStatus("Relay error — check console.");
+                Debug.LogError($"[LobbyManager] Relay allocation failed after retries: {e.Message}");
+                SetStatus("Relay error — try again in a moment.");
                 SetButtonsInteractable(true);
                 return;
             }
@@ -214,7 +211,7 @@ namespace AdventureMultiplayer
 
             SetStatus($"Joining relay '{code}'…");
             JoinAllocation joinAllocation;
-            try { joinAllocation = await RelayService.Instance.JoinAllocationAsync(code); }
+            try { joinAllocation = await WithRetryAsync(() => RelayService.Instance.JoinAllocationAsync(code).AsUniTask(), "JoinAllocation"); }
             catch (System.Exception e)
             {
                 Debug.LogError($"[LobbyManager] JoinAllocation failed: {e.Message}");
@@ -365,6 +362,31 @@ namespace AdventureMultiplayer
 
         // ── Services ──────────────────────────────────────────────────────────
 
+        /// <summary>
+        /// Runs a Unity service call with exponential backoff. Unity Relay periodically
+        /// answers CreateAllocation / GetJoinCode / JoinAllocation with a transient
+        /// "Internal Server Error" (HTTP 500) — most often when a fresh allocation is
+        /// requested seconds after a previous session was torn down (Exit → re-Host), while
+        /// the old allocation is still being reclaimed server-side. A short retry almost
+        /// always succeeds on the 2nd or 3rd attempt.
+        /// </summary>
+        private static async UniTask<T> WithRetryAsync<T>(System.Func<UniTask<T>> op, string label, int maxAttempts = 4)
+        {
+            for (int attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    return await op();
+                }
+                catch (System.Exception e) when (attempt < maxAttempts)
+                {
+                    int delayMs = 400 * (1 << (attempt - 1)); // 400, 800, 1600 ms
+                    Debug.LogWarning($"[LobbyManager] {label} attempt {attempt}/{maxAttempts} failed: {e.Message} — retrying in {delayMs} ms");
+                    await UniTask.Delay(delayMs);
+                }
+            }
+        }
+
         private static async UniTask InitServicesAsync()
         {
             if (UnityServices.State != ServicesInitializationState.Initialized)
@@ -460,7 +482,6 @@ namespace AdventureMultiplayer
             HighlightButton(level1Button, displayIndex == 0);
             HighlightButton(level2Button, displayIndex == 1);
             HighlightButton(level3Button, displayIndex == 2);
-            HighlightButton(level4Button, displayIndex == 3);
 
             UpdateSummary();
             Debug.Log($"[LobbyManager] Level selected: {sceneName}");
@@ -497,7 +518,6 @@ namespace AdventureMultiplayer
         {
             "DeathRunL2" => 1,
             "DeathRunL3" => 2,
-            "ObstacleL1" => 3,
             _            => 0,
         };
 

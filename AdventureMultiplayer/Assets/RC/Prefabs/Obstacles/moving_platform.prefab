@@ -275,6 +275,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ithappy.rc.RotationScript
   rotationAxis: 1
   rotationSpeed: 50
+  alternateByPosition: 1
 --- !u!64 &851520189989771357
 MeshCollider:
   m_ObjectHideFlags: 0

@@ -312,7 +312,6 @@ MonoBehaviour:
   level1Button: {fileID: 1376492248}
   level2Button: {fileID: 623972325}
   level3Button: {fileID: 1954709364}
-  level4Button: {fileID: 185013060}
   botsEnabledToggle: {fileID: 190365853}
   easyDifficultyButton: {fileID: 485820497}
   mediumDifficultyButton: {fileID: 851320081}
@@ -3159,7 +3158,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &185013058
 RectTransform:
   m_ObjectHideFlags: 0

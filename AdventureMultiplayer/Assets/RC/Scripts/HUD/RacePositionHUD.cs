@@ -4,49 +4,56 @@ using UnityEngine;
 namespace AdventureMultiplayer
 {
     /// <summary>
-    /// Shows the local player's current race position (1st / 2nd / 3rd …).
+    /// Top-right placement badge — the local player's current race position over the racer count
+    /// (e.g. "3rd" / "/4"). The badge visual stays hidden until the race is actually running.
     ///
-    /// Setup:
-    ///   - Add to a Canvas GameObject.
-    ///   - Assign positionText (a TextMeshProUGUI).
-    ///   - Reads RaceManager.Instance each frame — safe if RaceManager is null
-    ///     (text stays hidden until the race starts).
+    /// Scene hierarchy (auto-resolved by name — see PositionBadge.prefab):
+    ///   PositionBadge  — this component (always active)
+    ///   └── Badge      — the visual, toggled by race state
+    ///       ├── OrdinalText   "3rd"
+    ///       ├── TotalText     "/4"
+    ///       └── Outline
     /// </summary>
     [AddComponentMenu("Adventure Multiplayer/HUD/Race Position HUD")]
     public class RacePositionHUD : MonoBehaviour
     {
-        [SerializeField] private TextMeshProUGUI positionText;
+        [SerializeField] private GameObject      badge;        // visual, hidden until racing
+        [SerializeField] private TextMeshProUGUI ordinalText;  // "3rd"
+        [SerializeField] private TextMeshProUGUI totalText;    // "/4"
 
         private static readonly string[] k_suffixes = { "", "st", "nd", "rd" };
 
-        private float m_nextHudLogTime;
+        private void Awake()
+        {
+            if (badge == null)
+            {
+                Transform b = transform.Find("Badge");
+                badge = b != null ? b.gameObject : null;
+            }
+            if (ordinalText == null) ordinalText = FindTmp("Badge/OrdinalText");
+            if (totalText   == null) totalText   = FindTmp("Badge/TotalText");
+            if (badge != null) badge.SetActive(false);
+        }
+
+        private TextMeshProUGUI FindTmp(string path)
+        {
+            Transform t = transform.Find(path);
+            return t != null ? t.GetComponent<TextMeshProUGUI>() : null;
+        }
 
         private void Update()
         {
-            if (positionText == null) return;
+            bool racing = RaceManager.Instance != null && RaceManager.Instance.RaceStarted.Value;
+            int  pos    = racing ? RaceManager.Instance.GetLocalRacePosition() : 0;
+            int  total  = racing ? RaceManager.Instance.RaceEntries.Count      : 0;
 
-            if (RaceManager.Instance == null || !RaceManager.Instance.RaceStarted.Value)
-            {
-                positionText.text = string.Empty;
-                return;
-            }
-
-            int pos = RaceManager.Instance.GetLocalRacePosition();
-
-            if (Time.time >= m_nextHudLogTime)
-            {
-                m_nextHudLogTime = Time.time + 1f;
-                Debug.Log($"[RacePositionHUD] pos={pos} isServer={RaceManager.Instance.IsServer}");
-            }
-
-            if (pos <= 0)
-            {
-                positionText.text = string.Empty;
-                return;
-            }
+            bool show = racing && pos > 0;
+            if (badge != null && badge.activeSelf != show) badge.SetActive(show);
+            if (!show) return;
 
             string suffix = pos <= 3 ? k_suffixes[pos] : "th";
-            positionText.text = $"{pos}<size=60%>{suffix}</size>";
+            if (ordinalText != null) ordinalText.text = $"{pos}<size=55%>{suffix}</size>";
+            if (totalText   != null) totalText.text   = total > 0 ? $"/{total}" : string.Empty;
         }
     }
 }

@@ -206,12 +206,7 @@ namespace AdventureMultiplayer
             homeButton.onClick.AddListener(GoHome);
         }
 
-        private void GoHome()
-        {
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
-                NetworkManager.Singleton.Shutdown();
-            SceneManager.LoadScene(lobbySceneName);
-        }
+        private void GoHome() => ResetButtonHUD.ExitToLobbyAsync(lobbySceneName).Forget();
 
         private void SlideIn()
         {

@@ -52,6 +52,11 @@ namespace AdventureMultiplayer
         public NetworkVariable<double> CountdownEndTime { get; private set; } =
             new(0d, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+        /// <summary>ServerTime.Time when the race began (0 = not started). Clients derive the
+        /// elapsed race time from this — see RaceTimerHUD.</summary>
+        public NetworkVariable<double> RaceStartServerTime { get; private set; } =
+            new(0d, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
         // How long after the first finisher before results are forced (in case someone never finishes).
         [SerializeField] private float resultsTimeoutSeconds = 30f;
 
@@ -166,8 +171,9 @@ namespace AdventureMultiplayer
         public void StartRace()
         {
             if (!IsServer) return;
-            m_raceStartTime   = Time.time;
-            RaceStarted.Value = true;
+            m_raceStartTime            = Time.time;
+            RaceStartServerTime.Value  = NetworkManager.Singleton.ServerTime.Time;
+            RaceStarted.Value          = true;
             Debug.Log("[RaceManager] Race started.");
         }
 

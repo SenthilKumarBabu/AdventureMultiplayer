@@ -142,7 +142,14 @@ namespace AdventureMultiplayer
             bool hasItem = typeInt >= 0;
 
             if (slots[i].icon != null)
+            {
                 slots[i].icon.sprite = hasItem ? GetIcon(typeInt) : emptySlotSprite;
+                // Hide the icon graphic entirely when the slot is empty so the frame + the
+                // "locked" overlay read cleanly; show it at full opacity when an item is held.
+                Color c = slots[i].icon.color;
+                c.a = hasItem ? 1f : 0f;
+                slots[i].icon.color = c;
+            }
 
             if (slots[i].emptyOverlay != null)
                 slots[i].emptyOverlay.SetActive(!hasItem);
