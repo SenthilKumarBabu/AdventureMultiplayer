@@ -228,6 +228,50 @@ namespace AdventureMultiplayer
         private float       m_lastGroundedTime;
         private const float k_recentGroundedWindow = 0.25f;
 
+        // ── Running long-jump over gaps ───────────────────────────────────────
+        // The old gap handling probed a fixed gapProbeDistance (1.8 m) ahead and jumped the
+        // instant that probe found nothing — so the bot took off a full 1.8 m BEFORE the edge,
+        // at whatever speed the turn-brake had left it with. Measured on the DeathRunL1 plank
+        // section: a 4.8 m gap, approached at 0.5-0.9 speed, giving roughly 1.6-3.4 m of flight.
+        // Nine bots drowned in that one gap.
+        //
+        // A real player does the opposite: sees the gap early, sprints AT it, and takes off from
+        // the lip. That is what this does — and, just as importantly, it refuses gaps it cannot
+        // clear instead of leaping into the water anyway.
+        private bool  m_gapJumpArmed;     // a clearable gap is ahead — sprint, don't brake
+        private float m_gapEdgeDist;      // metres from the bot to the take-off lip
+
+        // Designer-placed jump line (BotObstacleHint.JumpOver + jumpFrom/jumpTo). Takes priority
+        // over the geometric scan, because on the DeathRunL1 plank climb the scan cannot be
+        // trusted: the far side is a plank that rocks 45 degrees every 1.5 s, so its height and
+        // reach differ every frame, and water_001 carries a SOLID collider that a downward probe
+        // reports as landable ground. Two markers settle both problems exactly. Same idea as the
+        // bridge line and the stepping-disc start/end, which are the only two crossings on this
+        // level that ever became reliable.
+        private BotObstacleHint m_jumpHint;
+        private Vector3         m_jumpFrom;
+        private Vector3         m_jumpTo;
+        private bool            m_jumpLineActive;   // heading for a marked take-off point
+        private float           m_nextJumpHintScan;
+        private const float k_jumpHintScanInterval = 0.25f;
+        private const float k_jumpHintRange        = 14f;  // how far out a marked take-off is noticed
+        private static readonly Collider[] s_jumpHintBuffer = new Collider[24];
+        private float m_gapJumpRange;     // conservative reach, used by the geometric scan
+        private float m_gapJumpRangeMax;  // true reach, used for designer-marked jump lines
+        private float m_nextGapScan;      // scan throttle
+        private float m_gapLogged;        // last time an arm/refuse was logged (throttle)
+        private const float k_gapScanInterval = 0.1f;
+        private const float k_gapTakeoffDist  = 0.7f;   // jump once the lip is this close
+        private const float k_gapStepSize     = 0.4f;   // forward resolution of the scan
+        private const float k_gapProbeDown    = 9f;     // how far down to look for footing
+
+        // Below this, it is not a gap worth a running long-jump — it is a seam, a plank joint or
+        // a scan artefact, and the ordinary step/hop handles it. Without this floor the DeathRunL1
+        // plank section armed the full sprint-and-leap behaviour on gaps of 1.2 m (29 times),
+        // 0.8 m (20), 1.6 m (17) and 0.4 m (15) — one scan step wide — which launched bots off the
+        // boards they were standing on. Deaths in that section went 17 -> 50 in one play-test.
+        private const float k_gapMinWidth = 2.5f;
+
         // ── Obstacle avoidance state ──────────────────────────────────────────
         // "Sticky" side commitment: once the bot picks left/right to go around an
         // obstacle, it holds that choice for avoidCommitDuration instead of
@@ -331,6 +375,25 @@ namespace AdventureMultiplayer
         private const float k_bounceModeHold = 2.2f;
         private static readonly Collider[] s_bounceBuffer = new Collider[16];
 
+        // The pad itself, cached while the mode is armed. Steering aims at the pad's TOP-SURFACE
+        // centre rather than its transform origin — on trampoline_002 the origin sits BELOW the
+        // walkable surface, and an earlier attempt that aimed there walked bots into the base of
+        // the prop and wedged them.
+        private Collider m_bouncePad;
+
+        // Launch verification. JumpingPlatform only fires when the player is grounded ON the pad
+        // collider, within its 1.2 m detection radius, and the pad is off its 0.5 s cooldown —
+        // with several bots funnelling into one pad, a lot of approaches fail all three. A
+        // DeathRunL1 play-test showed 88 launch-pad entries produce a y-peak of 14.79 (a 1.3 m
+        // hop) instead of the ~8 m a bounceForce-30 launch gives, and 61 deaths in the water just
+        // past the pad. The old code disabled gap/edge detection the moment a pad came within
+        // 4.5 m, on the assumption the launch would happen, so a bot whose launch never fired ran
+        // straight off the cliff with its cliff detection switched off.
+        private float m_bounceApproachSince;  // when the current un-launched approach started
+        private float m_bounceRetryUntil;     // while > now, back away from the pad and re-approach
+        private const float k_bounceLaunchTimeout = 1.2f;  // no launch in this long → back off and retry
+        private const float k_bounceRetryDuration = 0.6f;  // how long to walk back before re-approaching
+
         // A brief pause after a timed hazard (hammer, spinner, etc.) actually clears, before
         // stepping forward — matches a real player watching the swing, confirming the gap, THEN
         // moving. Without this the bot resumes at full speed the exact instant its raycast stops
@@ -346,6 +409,56 @@ namespace AdventureMultiplayer
         // bots stalled at 'pendulum_ball' / 'spinner_blade' in DeathRunL1 until they died.
         private float m_timedHazardWaitStart;
         private const float k_maxTimedHazardWait = 4f;
+
+        // ── Swinging-hazard timing (pendulum balls) ───────────────────────────
+        // The wait above is driven by the thin forward RAYCAST, and that ray simply cannot see a
+        // pendulum: the ball hangs high, is a small sphere, and sweeps through fast. Measured
+        // across every play-test — 339 'pendulum_ball' sightings produced just 5 waits, against
+        // 51 for the dumbbell and 36 for the hammer, which the ray does catch. When the ray
+        // finally connected the ball was already 0.8 m away, and the swing shoved the bot off
+        // the narrow board into the water. That was the level's signature death.
+        //
+        // This tracks the hazard the SPHERE sensor reports (which sees it reliably) and judges it
+        // by whether it is closing or receding, the way a player does — wait for it to swing
+        // away, then go — rather than trying to read OscillateRotation's phase, which is not
+        // knowable up front because these pendulums run with useRandomDelay on.
+        private Collider m_swingTracked;
+        private Collider m_swingLogged;
+        private float    m_swingPrevDist;
+        private float    m_swingRate;       // metres/sec, positive = closing on us
+        private bool     m_swingHold;       // stand still this frame and let it pass
+        private float    m_swingHoldStart;
+        private const float k_swingDangerRadius = 3f;
+
+        // ── Obstacle sensing — PHASE 1: OBSERVE ONLY ──────────────────────────
+        // The replacement for the three hand-tuned sticky modes (bridge / stone / bounce).
+        // Right now it ONLY reports what it identifies ahead: nothing below reads these fields
+        // for steering, so the bot moves exactly as it did before. The point of this phase is
+        // to prove the classifier reads every obstacle in a level correctly BEFORE any
+        // behaviour depends on it — the previous modes were each tuned against live logs and
+        // each regressed at least once, because behaviour and detection were changed together.
+        private BotObstacleSensor  m_sensor;
+        private BotObstacleReading m_reading;
+        private BotObstacleType    m_lastSensedType = BotObstacleType.None;
+        private string             m_lastSensedName;
+
+        [Header("Obstacle Sensing (Phase 1 — diagnostics)")]
+        [Tooltip("Log what the bot identifies ahead of it, and how it approaches each checkpoint " +
+                 "gate. Observation only — it never changes how the bot moves. Turn off once the " +
+                 "obstacle system is validated.")]
+        [SerializeField] private bool logObstacleSensor = true;
+        [Tooltip("How far ahead the obstacle sensor sweeps, in metres. Deliberately longer than " +
+                 "obstacleCheckDist so the log shows what is coming before the bot must react.")]
+        [SerializeField] private float sensorScanDistance = 6f;
+
+        // Checkpoint-gate diagnostic. These gates are thin trigger planes whose volume can float
+        // well above the raceable surface — on DeathRunL2 cp0 sat 3.7 m up past a trampoline, so
+        // every non-gliding character passed underneath and scored nothing. That was a level
+        // problem masquerading as an AI problem for several rounds of fixes. This logs the bot's
+        // height against the gate's height range on approach, so the same thing is visible in one
+        // line instead of being inferred.
+        private float m_nextGateLogTime;
+        private int   m_gateLogIdx = -1;
 
         // ── Position reporting (20 Hz) ────────────────────────────────────────
 
@@ -393,6 +506,8 @@ namespace AdventureMultiplayer
             m_inventory  = GetComponent<PlayerPowerUpInventory>();
             m_stunEffect = GetComponent<StunEffect>();
             m_slipEffect = GetComponent<SlipEffect>();
+
+            m_sensor = new BotObstacleSensor(transform, m_player, obstacleLayer);
 
             m_weavePhase     = Random.Range(0f, Mathf.PI * 2f); // each bot weaves out of sync
             m_preferredSide  = Random.value < 0.5f ? -1 : 1;    // which way this bot leans on a coin-flip detour
@@ -443,6 +558,7 @@ namespace AdventureMultiplayer
             m_deathPositions.Add(transform.position);
             if (m_deathPositions.Count > k_maxTrackedDeaths)
                 m_deathPositions.RemoveAt(0);
+            TryCatchUpAssist(transform.position);
 
             // Drop bridge mode AND block it from re-arming for a beat — otherwise the
             // sticky window (or NearBridgeHint firing again while the corpse is still by
@@ -466,11 +582,33 @@ namespace AdventureMultiplayer
             m_stoneSuppressUntil = Time.time + 2.6f;
             m_stonePath          = null; // re-pick route/index on the next STONES ENTER
 
-            m_bounceModeUntil = 0f;
-            m_bounceMode      = false;
-            m_bounceModePrev  = false;
-            m_bounceLaunched  = false;
-            m_bounceAssisted  = false;
+            m_bounceModeUntil  = 0f;
+            m_bounceMode       = false;
+            m_bounceModePrev   = false;
+            m_bounceLaunched   = false;
+            m_bounceAssisted   = false;
+            m_bouncePad        = null;  // the pad we died next to says nothing about where we respawn
+            m_bounceRetryUntil = 0f;
+
+            m_gapJumpArmed = false;     // the gap we were charging is not the one at the respawn point
+            m_gapEdgeDist  = 0f;
+
+            m_jumpLineActive = false;
+            m_jumpHint       = null;
+
+            m_swingHold    = false;   // whatever we were waiting on is not where we respawn
+            m_swingTracked = null;
+            m_swingLogged  = null;
+
+            // NetworkRespawner teleports ~2 s after death — re-pick the route target after that,
+            // and do nothing until then (stuck-recovery on a corpse in the water used to jump,
+            // back up and even force a second respawn).
+            m_routeResyncAt = Time.time + 2.5f;
+            m_deadUntil     = Time.time + 2.4f;
+            m_routeAlignStart = -1f;
+            m_routeLaunched   = false;
+            m_routeWaiting  = false;
+            m_routeJumped   = false;
         }
 
         // Every "is this actually safe to trust" heuristic below (onBridge, in particular) is a
@@ -581,6 +719,35 @@ namespace AdventureMultiplayer
                 m_raceStartLogTime = Time.time;
                 Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') GO — starting race from {transform.position}, " +
                           $"{m_checkpoints?.Length ?? 0} checkpoint(s) ahead.");
+            }
+
+            // ── Designer route ───────────────────────────────────────────────
+            // A scene with a BotRoute replaces ALL the guessing below (bridge / disc / launch-pad
+            // modes, gap probes, swing timing, raycast avoidance) with the authored line.
+            if (useRouteWhenAvailable && m_route == null && Time.time >= m_routeLookupAt)
+            {
+                m_routeLookupAt = Time.time + 1f;
+                m_route = BotRoute.ForBot(BotId);
+                if (m_route != null)
+                    Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') following route '{m_route.name}' ({m_route.Count} waypoints).");
+            }
+            if (useRouteWhenAvailable && m_route != null && m_route.Count > 0)
+            {
+                if (Time.time < m_deadUntil)
+                {
+                    SetSpeed(0f, false);
+                    m_input.jumpQueued = false;
+                    m_stuckLevel       = 0;
+                    m_lastStuckPos     = transform.position;
+                    return;
+                }
+                CheckCheckpointArrival();
+                if (!enabled) return; // finished this frame
+                RouteNavigate(m_route);
+                CheckStuck();
+                ConsiderUsingPowerUp();
+                LogProgress();
+                return;
             }
 
             // ── Bridge mode (sticky) ─────────────────────────────────────────
@@ -717,18 +884,23 @@ namespace AdventureMultiplayer
 
             if (m_bounceMode && !m_bounceModePrev)
             {
-                m_bounceEntryPos = transform.position;
-                m_bounceLaunched = false;
-                m_bounceAssisted = false;
+                m_bounceEntryPos      = transform.position;
+                m_bounceLaunched      = false;
+                m_bounceAssisted      = false;
+                m_bounceApproachSince = Time.time;
+                m_bounceRetryUntil    = 0f;
                 Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') LAUNCH PAD at {transform.position:F1} " +
-                          $"— walking on, riding the bounce to cp{m_nextCpIdx}.");
+                          $"— walking onto the pad, riding the bounce to cp{m_nextCpIdx}.");
             }
             if (!m_bounceMode && m_bounceModePrev)
             {
                 Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') LAUNCH PAD clear at {transform.position:F1} " +
-                          $"— travelled {Vector3.Distance(m_bounceEntryPos, transform.position):F1} m");
-                m_bounceLaunched = false;
-                m_bounceAssisted = false;
+                          $"— travelled {Vector3.Distance(m_bounceEntryPos, transform.position):F1} m " +
+                          $"launched={m_bounceLaunched}");
+                m_bounceLaunched   = false;
+                m_bounceAssisted   = false;
+                m_bouncePad        = null;
+                m_bounceRetryUntil = 0f;
             }
             m_bounceModePrev = m_bounceMode;
 
@@ -741,6 +913,19 @@ namespace AdventureMultiplayer
                     m_bounceLaunched = false;
                     m_bounceAssisted = false;
                     m_input.jumpQueued = false;   // no hops on the ground / on the pad — that's the bounce loop
+
+                    // Still on the ground and the pad hasn't fired. Give it a moment, then back
+                    // off and come at it again: walking away also lets the pad's 0.5 s cooldown
+                    // expire, which is the most likely reason a launch was refused when several
+                    // bots are funnelling into the same pad.
+                    if (Time.time >= m_bounceRetryUntil
+                        && Time.time - m_bounceApproachSince > k_bounceLaunchTimeout)
+                    {
+                        m_bounceRetryUntil    = Time.time + k_bounceRetryDuration;
+                        m_bounceApproachSince = Time.time + k_bounceRetryDuration;
+                        Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') LAUNCH PAD did not fire " +
+                                  $"at {transform.position:F1} — backing off to re-approach.");
+                    }
                 }
                 else if (!m_bounceLaunched && m_player.verticalVelocity.y > 10f)
                 {
@@ -748,8 +933,20 @@ namespace AdventureMultiplayer
                     // (JumpingPlatform/MushroomBounce set verticalVelocity directly). Ground
                     // jumps are suppressed here, so this won't false-trigger on a normal jump.
                     m_bounceLaunched = true;
+                    Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') LAUNCHED at {transform.position:F1} " +
+                              $"vy={m_player.verticalVelocity.y:F1} → cp{m_nextCpIdx}");
                 }
             }
+
+            EvaluateGapJump();
+
+            // PHASE 1: pure observation. Must stay ABOVE Navigate() so the log reflects what the
+            // bot saw when it decided, and must never write anything Navigate reads.
+            ObserveObstacles();
+            ObserveCheckpointGate();
+
+            // Must follow ObserveObstacles — it reads that frame's sensor result.
+            EvaluateSwingHazard();
 
             CheckCheckpointArrival();
             Navigate();
@@ -857,6 +1054,86 @@ namespace AdventureMultiplayer
 
         // ── Checkpoint arrival ────────────────────────────────────────────────
 
+        // ── Phase 1 observation ───────────────────────────────────────────────
+
+        /// <summary>
+        /// Sweep ahead, classify whatever is there, and log it when the answer CHANGES.
+        ///
+        /// Logging on change rather than per-frame keeps the Editor.log readable: one line per
+        /// obstacle encountered per bot, which is what makes a whole race reviewable afterwards.
+        /// Writes nothing the steering code reads.
+        /// </summary>
+        private void ObserveObstacles()
+        {
+            if (m_sensor == null) return;
+
+            Vector3 dir = m_input.desiredMoveDirection.sqrMagnitude > 0.04f
+                ? m_input.desiredMoveDirection
+                : transform.forward;
+
+            m_reading = m_sensor.Scan(dir, sensorScanDistance);
+
+            if (!logObstacleSensor) return;
+
+            // Same type on the same object = same encounter, already reported.
+            if (m_reading.Type == m_lastSensedType && m_reading.Name == m_lastSensedName)
+                return;
+
+            m_lastSensedType = m_reading.Type;
+            m_lastSensedName = m_reading.Name;
+
+            if (m_reading.Type == BotObstacleType.None) return;
+
+            string hint = m_reading.Hint != null ? $" hint={m_reading.Hint.behavior}" : "";
+            Debug.Log($"[BotSense] Bot {BotId} ('{name}') sees {m_reading.Type} " +
+                      $"'{m_reading.Name}' at {m_reading.Distance:F1} m{hint} " +
+                      $"— pos={transform.position:F1} grounded={m_player.isGrounded} target=cp{m_nextCpIdx}");
+        }
+
+        /// <summary>
+        /// Log how the bot lines up against the checkpoint gate it is heading for.
+        ///
+        /// Answers one specific question that static inspection of the scene cannot: is the
+        /// gate's trigger volume actually reachable from the surface the bot arrives on? If the
+        /// log shows a bot passing the gate with its height BELOW the gate's Y range, the level
+        /// needs fixing and no amount of AI tuning will complete that checkpoint.
+        /// </summary>
+        private void ObserveCheckpointGate()
+        {
+            if (!logObstacleSensor) return;
+            if (m_checkpoints == null || m_nextCpIdx >= m_checkpoints.Length) return;
+
+            var cp = m_checkpoints[m_nextCpIdx];
+            if (cp == null) return;
+
+            var col = cp.GetComponent<Collider>();
+            if (col == null) return;
+
+            Vector3 pos     = transform.position;
+            Vector3 closest = col.ClosestPoint(pos);
+            float   dist    = Vector3.Distance(pos, closest);
+            if (dist > 8f) return;                       // only while actually approaching
+
+            // Reset the throttle when the target changes, so every gate gets its own report.
+            if (m_gateLogIdx != m_nextCpIdx)
+            {
+                m_gateLogIdx      = m_nextCpIdx;
+                m_nextGateLogTime = 0f;
+            }
+            if (Time.time < m_nextGateLogTime) return;
+            m_nextGateLogTime = Time.time + 1f;
+
+            Bounds b     = col.bounds;
+            bool   withinY = pos.y >= b.min.y && pos.y <= b.max.y;
+            float  shortfall = withinY ? 0f : (pos.y < b.min.y ? b.min.y - pos.y : pos.y - b.max.y);
+
+            Debug.Log($"[BotGate] Bot {BotId} ('{name}') approaching cp{cp.index} " +
+                      $"— dist={dist:F1} m, botY={pos.y:F2}, gateY={b.min.y:F2}..{b.max.y:F2}, " +
+                      $"insideY={withinY}" +
+                      (withinY ? "" : $", MISSES BY {shortfall:F2} m {(pos.y < b.min.y ? "BELOW" : "ABOVE")}") +
+                      $", grounded={m_player.isGrounded}");
+        }
+
         private void CheckCheckpointArrival()
         {
             if (m_checkpoints == null || m_nextCpIdx >= m_checkpoints.Length) return;
@@ -888,6 +1165,74 @@ namespace AdventureMultiplayer
             Debug.Log($"[RaceBotBrain] Bot {m_botId} ('{name}') → checkpoint {cp.index} " +
                       $"at t={(m_raceStartLogTime > 0f ? Time.time - m_raceStartLogTime : 0f):F1}s, pos={transform.position}.");
             m_nextCpIdx++;
+        }
+
+        // ── Catch-up assist ───────────────────────────────────────────────────
+        // Racing-game rubber band: a bot that keeps dying at the same obstacle respawns just
+        // past it instead of failing there forever, so every bot can finish the level. Never
+        // skips a checkpoint (stops at the next one) and never lands on moving / narrow ground.
+        [Header("Catch-up Assist")]
+        [Tooltip("After this many deaths at the same spot, respawn the bot just past the obstacle.")]
+        [SerializeField] private bool catchUpAssist = true;
+        [SerializeField] private int  deathsBeforeAssist = 3;
+        private readonly RaycastHit[] m_assistHits = new RaycastHit[8];
+
+        private void TryCatchUpAssist(Vector3 deathPos)
+        {
+            if (!catchUpAssist || m_route == null || m_route.Count < 2 || m_respawner == null) return;
+            if (m_checkpoints == null || m_nextCpIdx >= m_checkpoints.Length) return;
+
+            int near = 0;
+            foreach (var d in m_deathPositions)
+                if (Flat(d - deathPos).magnitude < 6f) near++;
+            if (near < deathsBeforeAssist) return;
+
+            var  cp       = m_checkpoints[m_nextCpIdx];
+            bool cpIsLast = m_nextCpIdx == m_checkpoints.Length - 1;   // never warp onto the finish
+            Collider cpCol = cp != null ? cp.GetComponent<Collider>() : null;
+            Bounds cpBounds = cpCol != null ? cpCol.bounds : new Bounds(cp != null ? cp.transform.position : deathPos, Vector3.one * 3f);
+            cpBounds.Expand(2f);
+
+            int   i         = m_route.FindResumeIndex(deathPos);
+            float travelled = 0f;
+            Vector3? spot   = null;
+            for (int j = Mathf.Max(1, i); j < m_route.Count && travelled < 45f; j++)
+            {
+                Vector3 p = m_route[j].transform.position;
+                travelled += Vector3.Distance(m_route[j - 1].transform.position, p);
+                if (cpBounds.Contains(p))
+                {
+                    if (!cpIsLast && cp != null) spot = cp.transform.position; // respawn at the checkpoint itself — it registers on arrival
+                    break;
+                }
+                if (travelled < 10f) continue;
+                var wp = m_route[j]; var before = m_route[j - 1];
+                if (wp.action != BotWaypoint.Action.Walk || wp.laneWidth < 1.5f) continue;   // open ground only
+                if (before.IsJump || before.action == BotWaypoint.Action.Wait || before.action == BotWaypoint.Action.Careful) continue;
+                if (!SolidGroundAt(p)) continue;
+                spot = p + Vector3.up * 0.5f;
+                break;
+            }
+            if (spot == null) return;
+
+            m_respawner.SetRespawnPoint(spot.Value);
+            m_deathPositions.RemoveAll(d => Flat(d - deathPos).magnitude < 6f);
+            Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') ASSIST — {near} deaths at {deathPos:F1}, respawning past it at {spot.Value:F1}.");
+        }
+
+        // Static, walkable ground under p — not a swinging plank, spinning disc or hazard.
+        private bool SolidGroundAt(Vector3 p)
+        {
+            int count = Physics.RaycastNonAlloc(p + Vector3.up * 1.5f, Vector3.down, m_assistHits, 4f,
+                                                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            float best = float.MaxValue; Collider top = null;
+            for (int k = 0; k < count; k++)
+            {
+                var h = m_assistHits[k];
+                if (h.collider == null || h.collider.GetComponentInParent<Player>() != null) continue;
+                if (h.distance < best) { best = h.distance; top = h.collider; }
+            }
+            return top != null && !IsTimedHazard(top) && !IsRideablePlatform(top) && FindObstacleKnockback(top) == null;
         }
 
         // An ordinary checkpoint is a wide trigger GATE (on DeathRunL2, 12 m across and 15 m
@@ -1033,6 +1378,37 @@ namespace AdventureMultiplayer
             if (dir.sqrMagnitude > 0.01f)
                 dir = ObstacleAvoidance(dir);
 
+            // ── Step 4.5: a designer-marked jump line overrides the steering ──
+            // Without this the bot sprints at the CHECKPOINT and takes off from wherever it
+            // happens to be — which on DeathRunL1 is straight down the middle between the two
+            // planks, into the water. The markers say where to leave from and where to land, so
+            // use them. Far from the lip a hazard stop is still respected; once committed the
+            // run-up is not interruptible, because losing speed at the lip means falling short.
+            if (m_jumpLineActive)
+            {
+                Vector3 toLip   = Vector3.ProjectOnPlane(m_jumpFrom - transform.position, Vector3.up);
+                Vector3 lineDir = Vector3.ProjectOnPlane(m_jumpTo - m_jumpFrom, Vector3.up).normalized;
+                bool    committed = toLip.magnitude < 5f;
+
+                if (committed || dir.sqrMagnitude > 0.01f)
+                {
+                    // Approach the lip, then align to the jump line itself so the take-off is
+                    // square to the gap rather than at an angle across it.
+                    Vector3 aim = toLip.magnitude > 1.2f ? toLip.normalized : lineDir;
+                    if (aim.sqrMagnitude > 0.01f) dir = aim;
+                }
+            }
+
+            // ── Step 4.6: hold for a swinging hazard ──────────────────────────
+            // Stand exactly where we are rather than edging forward. On DeathRunL1's narrow
+            // boards, creeping toward the swing is what put bots inside its arc and got them
+            // knocked into the water — standing still on the board is the safe move.
+            if (m_swingHold)
+            {
+                SetSpeed(0f, false);
+                return;
+            }
+
             // Hazard-boxed-in returns a zero vector deliberately (see ObstacleAvoidance) — brake
             // to a real stop here instead of letting m_currentSpeed keep ramping toward "sprint"
             // while stationary, which would otherwise cause an unnaturally instant full-speed
@@ -1051,7 +1427,15 @@ namespace AdventureMultiplayer
             bool  wantRun;
             float wantSpeed;
 
-            if (turnAngle >= m_hardBrakeTurnAngle)
+            if (m_gapJumpArmed)
+            {
+                // A clearable gap is coming: sprint at it and do NOT let the turn-brake bleed
+                // speed off on the run-up. Jump distance is speed x flight time, so braking here
+                // is what turned a 4.8 m gap the character could clear into a drowning.
+                wantSpeed = 1f;
+                wantRun   = true;
+            }
+            else if (turnAngle >= m_hardBrakeTurnAngle)
             {
                 // Hard corner — walk slowly
                 float t = Mathf.Clamp01((turnAngle - m_hardBrakeTurnAngle) / 60f);
@@ -1107,12 +1491,30 @@ namespace AdventureMultiplayer
             }
             else if (m_bounceMode)
             {
-                // Moderate approach — enough momentum to carry onto the pad, not a flat-out
-                // run that skims across without a grounded contact frame (which skips the
-                // launch). Near-full + run once launched so air control carries the bot
-                // forward onto the raised platform.
-                wantSpeed = m_bounceLaunched ? 0.95f : 0.7f;
-                wantRun   = m_bounceLaunched;
+                // Near-full + run once launched so air control carries the bot forward across
+                // the gap. Before that, ease down as the pad gets close: JumpingPlatform only
+                // fires while the player is GROUNDED on the pad collider and within its 1.2 m
+                // detection radius, so arriving slower buys more grounded frames inside that
+                // small window. Not a crawl — an earlier build that walked in at 0.55 aimed at
+                // the pad's origin and wedged bots in the base of the prop.
+                if (m_bounceLaunched)
+                {
+                    wantSpeed = 0.95f;
+                    wantRun   = true;
+                }
+                else if (Time.time < m_bounceRetryUntil)
+                {
+                    wantSpeed = 0.6f;   // backing off to re-approach
+                    wantRun   = false;
+                }
+                else
+                {
+                    float padDist = TryGetBouncePadTop(out Vector3 padPt)
+                        ? Vector3.ProjectOnPlane(padPt - transform.position, Vector3.up).magnitude
+                        : 99f;
+                    wantSpeed = padDist < 2f ? 0.6f : 0.8f;
+                    wantRun   = false;
+                }
             }
 
             // ── Step 6: smooth speed toward target ────────────────────────────
@@ -1131,6 +1533,462 @@ namespace AdventureMultiplayer
             m_currentSpeed = Mathf.MoveTowards(m_currentSpeed, target, rate * Time.deltaTime);
             m_input.desiredMoveDirection = Vector3.zero;
             m_input.runHeld = run;
+        }
+
+        // ── Designer route (BotRoute) ─────────────────────────────────────────
+        // The scene's BotRoute says where to go and what to do at each point; this just
+        // executes it. No geometry guessing — if a bot goes wrong here, move a waypoint.
+
+        [Header("Designer Route")]
+        [Tooltip("Follow the scene's BotRoute when one exists, instead of raycast-guessing the track.")]
+        [SerializeField] private bool useRouteWhenAvailable = true;
+
+        private BotRoute m_route;
+        private float    m_deadUntil;       // between death and the respawn teleport: sit still
+
+        /// <summary>Debug: "BotRoute_A wp188/260 Wait" — current route target, for the editor bot cams.</summary>
+        public string RouteStatus => m_route == null ? "no route"
+            : m_routeIdx < 0 ? $"{m_route.name} starting"
+            : m_routeIdx >= m_route.Count ? $"{m_route.name} → finish"
+            : $"{m_route.name} wp{m_routeIdx}/{m_route.Count} {m_route[m_routeIdx].action}{(m_routeWaiting ? " (waiting)" : "")}";
+        private float    m_routeLookupAt;
+        private bool  m_routeActive;
+        private int   m_routeIdx = -1;      // waypoint currently heading for; -1 = pick on first frame
+        private float m_routeResyncAt;      // re-pick the target at/after this time; 0 = not pending
+        private bool  m_routeCareful;       // on a Careful segment: no jumps, no nudges
+        private bool  m_routeWaiting;
+        private float m_routeWaitStart;
+        private float m_routeClearSince = -1f;
+        private bool  m_routeJumped;        // took off from a Jump waypoint, not landed yet
+        private bool  m_routeLaunched;      // thrown up by a launch pad this airtime
+        private float m_routeBackCheckAt;
+        private float m_routeAlignStart = -1f;
+        private bool  m_routeDoubleJump;    // that take-off wants a second jump at the apex
+        private bool  m_routeDoubleJumped;
+        private float m_routeJumpTime;
+        private float m_routeNextLog;
+        private readonly Collider[] m_routeOverlap = new Collider[32];
+        private readonly RaycastHit[] m_routeRayHits = new RaycastHit[8];
+
+        private static Vector3 Flat(Vector3 v) => Vector3.ProjectOnPlane(v, Vector3.up);
+
+        private void RouteNavigate(BotRoute route)
+        {
+            m_routeActive = true;
+            int     n        = route.Count;
+            Vector3 pos      = transform.position;
+            bool    grounded = m_player.isGrounded;
+
+            if (m_routeIdx < 0 || (m_routeResyncAt > 0f && Time.time >= m_routeResyncAt))
+            {
+                int old = m_routeIdx;
+                m_routeIdx      = route.FindResumeIndex(pos);
+                m_routeResyncAt = 0f;
+                m_routeWaiting  = false;
+                m_routeJumped   = false;
+                m_routeAlignStart = -1f;
+                if (old != m_routeIdx)
+                    Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') ROUTE resync {old} → {m_routeIdx} at {pos:F1}");
+            }
+
+            // Knocked back (spinner wall, hammer, rocket): if the bot is now behind a waypoint it
+            // already passed, go back to it — above all to a Wait, so it times the hazard again
+            // instead of walking straight back into it (playtest: Bolt swatted by the L1 spinner
+            // drum for a minute, re-entering without ever waiting).
+            if (grounded && !m_routeWaiting && Time.time >= m_routeBackCheckAt && m_routeIdx > 0)
+            {
+                m_routeBackCheckAt = Time.time + 0.5f;
+                int resume = route.FindResumeIndex(pos);
+                Vector3 sa = Flat(route[m_routeIdx - 1].transform.position), sb = Flat(route[Mathf.Min(m_routeIdx, n - 1)].transform.position);
+                Vector3 sab = sb - sa, sp = Flat(pos);
+                float st = sab.sqrMagnitude > 0.01f ? Mathf.Clamp01(Vector3.Dot(sp - sa, sab) / sab.sqrMagnitude) : 0f;
+                float offLine = Vector3.Distance(sp, sa + sab * st);
+                if (resume < m_routeIdx - 1 && offLine > 2.5f)
+                {
+                    Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') ROUTE pushed back {m_routeIdx} → {resume} at {pos:F1}");
+                    m_routeIdx = resume;
+                }
+            }
+
+            // Landed after a route jump.
+            if (m_routeJumped && grounded && Time.time - m_routeJumpTime > 0.2f)
+                m_routeJumped = false;
+
+            // Second jump near the top of the arc.
+            if (m_routeJumped && m_routeDoubleJump && !m_routeDoubleJumped && !grounded
+                && Time.time - m_routeJumpTime > 0.25f && m_player.verticalVelocity.y < 1f)
+            {
+                m_input.jumpQueued  = true;
+                m_routeDoubleJumped = true;
+                Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') ROUTE double-jump at {pos:F1}");
+            }
+
+            // Past the last waypoint: straight for the current checkpoint (the finish line).
+            if (m_routeIdx >= n)
+            {
+                m_routeCareful = false;
+                Vector3 toCp = Flat(CurrentCheckpointPos() - pos);
+                RouteDrive(toCp.sqrMagnitude > 0.01f ? toCp.normalized : transform.forward, 1f, true);
+                return;
+            }
+
+            // ── In the air ───────────────────────────────────────────────────
+            // Never advance waypoints mid-air: flying over the landing point used to count as
+            // "passed", the target jumped to the NEXT waypoint and the bot turned in the air —
+            // and close to a target the direction to it flips every frame. Instead hold the
+            // jump's line: steer at the landing point, and once over/past it keep the segment
+            // heading and ease off so it drops onto the spot instead of sailing past.
+            if (grounded) m_routeLaunched = false;
+            else if (m_player.verticalVelocity.y > 22f) m_routeLaunched = true;
+
+            if (!grounded)
+            {
+                Vector3 lp, seg, toL;
+                float   dist;
+                bool    over;
+                for (int guard = 0; ; guard++)
+                {
+                    var land = route[m_routeIdx];
+                    var from = m_routeIdx > 0 ? route[m_routeIdx - 1] : null;
+                    lp   = land.transform.position;
+                    seg  = from != null ? Flat(lp - from.transform.position) : Flat(lp - pos);
+                    seg  = seg.sqrMagnitude > 0.01f ? seg.normalized : Flat(transform.forward).normalized;
+                    toL  = Flat(lp - pos);
+                    dist = toL.magnitude;
+                    over = dist < 0.8f || Vector3.Dot(toL, seg) < 0f;
+
+                    // Launched high over it (trampoline / mushroom bounce): that waypoint is behind
+                    // in all but height. Braking onto it dropped the bot back on the pad → bounce
+                    // loop. Move on to the next one and fly toward that instead.
+                    // Only for a real launch (pad bounce ~30 m/s up; character jumps are 13-19) —
+                    // skipping during an ordinary jump or drop skipped the NEXT take-off too and
+                    // the bot walked off the disc (playtest: Spike 16 deaths, Lily 14).
+                    if (!m_routeLaunched || !over || pos.y - lp.y < 2.5f || m_routeIdx + 1 >= n || guard >= 6) break;
+                    m_routeIdx++;
+                }
+
+                Vector3 airDir = over ? seg : toL / dist;
+                // Close in on the line, but never turn more than 60° off the jump heading.
+                if (Vector3.Angle(seg, airDir) > 60f)
+                    airDir = Vector3.RotateTowards(seg, airDir, 60f * Mathf.Deg2Rad, 0f);
+                RouteDrive(airDir, over ? 0.25f : 1f, !over);
+                return;
+            }
+
+            BotWaypoint target = null, prev = null;
+            Vector3 tp = pos, segDir = transform.forward;
+            float hd = 0f;
+
+            // Process at most a few waypoint arrivals per frame (tightly packed points).
+            for (int guard = 0; guard < 3 && m_routeIdx < n; guard++)
+            {
+                target = route[m_routeIdx];
+                prev   = m_routeIdx > 0 ? route[m_routeIdx - 1] : null;
+                var segAction = prev != null ? prev.action : BotWaypoint.Action.Walk;
+                m_routeCareful = segAction == BotWaypoint.Action.Careful;
+
+                Vector3 raw  = target.transform.position;
+                Vector3 from = prev != null ? prev.transform.position : pos;
+                segDir = Flat(raw - from);
+                if (segDir.sqrMagnitude < 0.01f) segDir = Flat(raw - pos);
+                segDir = segDir.sqrMagnitude > 0.0001f ? segDir.normalized : transform.forward;
+
+                // Spread bots across the path so they don't queue nose-to-tail — except where
+                // precision matters (narrow ground, jump take-offs).
+                float lane = target.laneWidth;
+                if (m_routeCareful || target.action == BotWaypoint.Action.Careful || target.IsJump
+                    || (prev != null && prev.IsJump))
+                    lane = 0f;
+                // Slowly drifting, per-bot position across the path — like a player who
+                // isn't glued to one line. Different seed per bot, so they never move together.
+                float laneFrac = Mathf.PerlinNoise((BotId % 97) * 0.731f, Time.time * 0.12f) - 0.5f;
+                tp = raw + Vector3.Cross(Vector3.up, segDir) * (laneFrac * lane);
+
+                Vector3 toT = Flat(tp - pos);
+                hd = toT.magnitude;
+                float dy = raw.y - pos.y;
+                bool within = hd <= target.radius && Mathf.Abs(dy) < 3f;
+                bool passed = Vector3.Dot(Flat(pos - tp), segDir) > 0f && hd < target.radius * 3f && Mathf.Abs(dy) < 3f;
+
+                // Fell off / teleported far from the line → re-pick next frame.
+                if (hd > 25f && grounded && m_routeResyncAt <= 0f)
+                    m_routeResyncAt = Time.time;
+
+                if (!(within || passed)) break;
+
+                if (target.action == BotWaypoint.Action.Wait)
+                {
+                    if (!RouteWaitDone(route, target))
+                    {
+                        SetSpeed(0f, false);
+                        return;
+                    }
+                }
+                else if (target.IsJump)
+                {
+                    if (grounded)
+                    {
+                        // Face the jump first: taking off while still carrying the previous
+                        // segment's heading (a 45° turn at the take-off) flew the bot into the
+                        // gap beside the target disc. Give it up to 0.5 s to line up.
+                        Vector3 jd = RouteJumpHeading(route, m_routeIdx);
+                        Vector3 lv = Flat(m_player.lateralVelocity);
+                        bool aligned = jd == Vector3.zero || lv.magnitude < 1.5f || Vector3.Angle(lv, jd) < 30f;
+                        if (!aligned)
+                        {
+                            if (m_routeAlignStart < 0f) m_routeAlignStart = Time.time;
+                            if (Time.time - m_routeAlignStart < 0.5f) break;
+                        }
+                        m_routeAlignStart   = -1f;
+                        m_input.jumpQueued  = true;
+                        m_routeJumped       = true;
+                        m_routeDoubleJump   = target.action == BotWaypoint.Action.DoubleJump;
+                        m_routeDoubleJumped = false;
+                        m_routeJumpTime     = Time.time;
+                        m_obstaclesJumped++;
+                        Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') ROUTE jump at wp{m_routeIdx} {pos:F1} spd={m_currentSpeed:F2}");
+                    }
+                    else if (!(passed && hd > target.radius))
+                    {
+                        break; // airborne at the lip — keep closing in, jump on touchdown
+                    }
+                    else
+                    {
+                        Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') ROUTE missed jump wp{m_routeIdx} (airborne) at {pos:F1}");
+                    }
+                }
+
+                m_routeIdx++;
+            }
+
+            if (m_routeIdx >= n) return; // finished the route this frame; next frame heads for the finish
+
+            // ── Steering ─────────────────────────────────────────────────────
+            Vector3 dir;
+            if (m_routeCareful && prev != null)
+            {
+                // Follow the segment line itself (not just "at the target"), so a bot that
+                // stepped on off-centre is pulled back to the middle of the bridge/plank.
+                Vector3 a   = Flat(prev.transform.position);
+                Vector3 b   = Flat(tp);
+                Vector3 p   = Flat(pos);
+                Vector3 ab  = b - a;
+                float   len = ab.magnitude;
+                float   t   = len > 0.01f ? Vector3.Dot(p - a, ab / len) : len;
+                Vector3 carrot = a + ab / Mathf.Max(len, 0.01f) * Mathf.Min(t + 1.5f, len);
+                Vector3 toC = carrot - p;
+                dir = toC.sqrMagnitude > 0.01f ? toC.normalized : segDir;
+            }
+            else
+            {
+                Vector3 toT = Flat(tp - pos);
+                dir = hd > 0.1f ? toT / hd : segDir;
+
+                // Coming up to a take-off: swing onto the jump's heading before reaching it, and
+                // while lining up at the take-off point, steer along the jump only.
+                if (target.IsJump && hd < 2.5f)
+                {
+                    Vector3 jd = RouteJumpHeading(route, m_routeIdx);
+                    if (jd != Vector3.zero)
+                        dir = m_routeAlignStart >= 0f ? jd : Vector3.Slerp(dir, jd, 1f - hd / 2.5f).normalized;
+                }
+
+                // Round corners on plain running segments instead of touching every point.
+                if (target.action == BotWaypoint.Action.Walk && m_routeIdx + 1 < n && hd < 2.5f)
+                {
+                    Vector3 nextDir = Flat(route[m_routeIdx + 1].transform.position - tp);
+                    if (nextDir.sqrMagnitude > 0.01f)
+                        dir = Vector3.Slerp(dir, nextDir.normalized, 0.5f * (1f - hd / 2.5f)).normalized;
+                }
+
+                // Another racer right in front: edge past on this bot's preferred side instead
+                // of the nose-to-nose deadlock.
+                if (!m_routeJumped
+                    && Physics.SphereCast(pos + Vector3.up * 0.8f, 0.35f, dir, out RaycastHit rh, 1.6f,
+                                          Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)
+                    && IsRacer(rh.collider))
+                    dir = Quaternion.Euler(0f, 30f * m_preferredSide, 0f) * dir;
+            }
+
+            // ── Speed ────────────────────────────────────────────────────────
+            float speed;
+            bool  run;
+            if (!grounded || m_routeJumped)
+            {
+                speed = 1f; run = true;           // full air control toward the landing
+            }
+            else if (m_routeCareful)
+            {
+                speed = 0.6f; run = false;
+            }
+            else if (target.IsJump)
+            {
+                speed = m_routeAlignStart >= 0f ? 0.5f : 1f;   // never brake on the run-up —
+                run   = m_routeAlignStart < 0f;                 // except to turn onto the jump
+            }
+            else if (target.action == BotWaypoint.Action.Careful && hd < 3f)
+            {
+                speed = 0.7f; run = false;        // enter narrow ground under control
+            }
+            else if (target.action == BotWaypoint.Action.Wait && hd < 3f)
+            {
+                // Brake into a Wait point — arriving at full run slid bots past it, onto the
+                // swinging plank / into the hazard they were meant to wait for.
+                speed = Mathf.Lerp(0.3f, 0.8f, hd / 3f); run = false;
+            }
+            else
+            {
+                float turn = Vector3.Angle(transform.forward, dir);
+                if (turn >= m_hardBrakeTurnAngle) { speed = 0.6f; run = false; }
+                else                              { speed = 1f;   run = true;  }
+
+                if (m_walkBreakChance > 0f)
+                {
+                    if (Time.time < m_walkBreakEndTime) { speed = Mathf.Min(speed, 0.55f); run = false; }
+                    else if (Random.value < m_walkBreakChance * Time.deltaTime)
+                        m_walkBreakEndTime = Time.time + Random.Range(m_walkBreakDuration * 0.7f, m_walkBreakDuration * 1.3f);
+                }
+            }
+
+            if (m_routeCareful && !m_routeJumped)
+                m_input.jumpQueued = false;
+
+            RouteDrive(dir, speed, run);
+
+            if (Time.time >= m_routeNextLog)
+            {
+                m_routeNextLog = Time.time + 1f;
+                Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') ROUTE wp{m_routeIdx}/{n} {target.action} " +
+                          $"seg={(prev != null ? prev.action.ToString() : "-")} pos={pos:F1} dist={hd:F1} " +
+                          $"grounded={grounded} spd={m_currentSpeed:F2}");
+            }
+        }
+
+        // No moving hazard within ~0.8 m of the route for `length` metres past waypoint `idx`.
+        private bool RoutePathClear(BotRoute route, int idx, float length)
+        {
+            float travelled = 0f;
+            Vector3 a = route[idx].transform.position;
+            for (int i = idx + 1; i < route.Count && travelled < length; i++)
+            {
+                Vector3 b   = route[i].transform.position;
+                float   seg = Vector3.Distance(a, b);
+                int     steps = Mathf.Max(1, Mathf.CeilToInt(seg));
+                for (int s = 1; s <= steps && travelled + seg * s / steps <= length + 0.5f; s++)
+                {
+                    Vector3 p = Vector3.Lerp(a, b, s / (float)steps) + Vector3.up * 0.8f;
+                    int count = Physics.OverlapSphereNonAlloc(p, 0.8f, m_routeOverlap,
+                                                              Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide);
+                    for (int k = 0; k < count; k++)
+                    {
+                        var c = m_routeOverlap[k];
+                        if (c == null || IsRacer(c) || c.GetComponentInParent<Player>() == m_player) continue;
+                        if (IsTimedHazard(c) || FindObstacleKnockback(c) != null) return false;
+                    }
+                }
+                travelled += seg;
+                a = b;
+            }
+            return true;
+        }
+
+        // Flat heading from a Jump waypoint to where it lands (the next waypoint elsewhere).
+        private static Vector3 RouteJumpHeading(BotRoute route, int idx)
+        {
+            Vector3 at = route[idx].transform.position;
+            for (int i = idx + 1; i < route.Count; i++)
+            {
+                Vector3 d = Flat(route[i].transform.position - at);
+                if (d.sqrMagnitude > 0.09f) return d.normalized;
+            }
+            return Vector3.zero;
+        }
+
+        private void RouteDrive(Vector3 dir, float speed, bool run)
+        {
+            float rate = (speed > m_currentSpeed) ? m_speedAccelRate : m_speedDecelRate;
+            m_currentSpeed = Mathf.MoveTowards(m_currentSpeed, speed, rate * Time.deltaTime);
+            m_input.desiredMoveDirection = dir * m_currentSpeed;
+            m_input.runHeld              = run && m_currentSpeed > 0.75f;
+        }
+
+        // True once the Wait waypoint's watch zone has been hazard-free for a moment (or the
+        // bot has waited maxWait). Only moving hazards count — the ground, the bridge and other
+        // racers inside the zone are ignored.
+        private bool RouteWaitDone(BotRoute route, BotWaypoint wp)
+        {
+            if (!m_routeWaiting)
+            {
+                m_routeWaiting    = true;
+                m_routeWaitStart  = Time.time;
+                m_routeClearSince = -1f;
+                Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') ROUTE waiting at wp{m_routeIdx}");
+            }
+
+            if (wp.waitFor == BotWaypoint.WaitFor.Footing)
+                return RouteFootingWaitDone(route, wp);
+
+            // Clear = nothing moving on the bot's OWN path through the danger zone (the next ~8 m
+            // of route). A single sphere on the zone centre never cleared for a spinner or
+            // dumbbell — their hub sits there permanently — so every such wait ran to its timeout
+            // and the bot then walked in at a random moment and got swatted (playtest: Bolt
+            // knocked around the L1 spinner for 20+ s).
+            bool clear = RoutePathClear(route, m_routeIdx, 12f);
+
+            if (clear) { if (m_routeClearSince < 0f) m_routeClearSince = Time.time; }
+            else m_routeClearSince = -1f;
+
+            bool go      = m_routeClearSince >= 0f && Time.time - m_routeClearSince >= 0.15f;
+            bool timeout = Time.time - m_routeWaitStart >= wp.maxWait;
+            if (!go && !timeout) return false;
+
+            Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') ROUTE go from wp{m_routeIdx} after " +
+                      $"{Time.time - m_routeWaitStart:F1}s ({(go ? "clear" : "timeout")})");
+            m_routeWaiting = false;
+            return true;
+        }
+
+        // Footing wait (swinging planks): go once the next waypoint has ground under it at its own
+        // height — the plank there has swung into line — and that ground isn't out of reach above
+        // the ground this bot is standing on (which may itself be a moving plank).
+        private bool RouteFootingWaitDone(BotRoute route, BotWaypoint wp)
+        {
+            // The waypoint to step/jump onto: the first one after this that isn't at the same spot
+            // (a Jump take-off often shares this Wait's position).
+            BotWaypoint next = null;
+            bool jumpAfter = false;
+            for (int i = m_routeIdx + 1; i < route.Count; i++)
+            {
+                if (Flat(route[i].transform.position - wp.transform.position).sqrMagnitude > 0.09f) { next = route[i]; break; }
+                jumpAfter |= route[i].IsJump;
+            }
+            if (next == null) { m_routeWaiting = false; return true; }
+
+            // Waypoints sit 0.3 m above the surface they were generated on.
+            float wantY  = next.transform.position.y - 0.3f;
+            Vector3 probe = next.transform.position + Vector3.up * 1.5f;
+            bool footing = false;
+            int count = Physics.RaycastNonAlloc(probe, Vector3.down, m_routeRayHits, 3.5f,
+                                                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+            {
+                var h = m_routeRayHits[i];
+                if (h.collider == null || IsRacer(h.collider) || h.collider.GetComponentInParent<Player>() == m_player) continue;
+                if (h.normal.y < 0.6f || Mathf.Abs(h.point.y - wantY) > 0.6f) continue;
+                footing = true;
+                break;
+            }
+            float reach   = jumpAfter || wp.IsJump ? 1.6f : 0.6f;
+            bool  inReach = wantY - transform.position.y <= reach;
+
+            bool go      = footing && inReach && m_player.isGrounded;
+            bool timeout = Time.time - m_routeWaitStart >= wp.maxWait;
+            if (!go && !timeout) return false;
+
+            Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') ROUTE go from wp{m_routeIdx} after " +
+                      $"{Time.time - m_routeWaitStart:F1}s ({(go ? "footing lined up" : "timeout")})");
+            m_routeWaiting = false;
+            return true;
         }
 
         // ── Obstacle avoidance ────────────────────────────────────────────────
@@ -1544,12 +2402,20 @@ namespace AdventureMultiplayer
             }
 
             // ── Launch pad (trampoline / mushroom bounce) ────────────────────────
-            // Aim straight at the checkpoint the whole time and skip every wall/detour/gap
-            // check below (the pad's collider reads as a chest-high "wall" and the drop past
-            // it as a "gap" — both reactions break the launch). Ground jumps are suppressed
-            // in Update (the bounce loop); the ONE deliberate jump is a mid-air assist once
-            // past the apex — the extra height + the air-control window is what lets a
-            // non-glide character reach a raised checkpoint platform after the launch.
+            // Two distinct phases, because conflating them is what killed bots on DeathRunL1.
+            //
+            //   BEFORE the launch — steer at the PAD and nothing else, and do NOT suppress the
+            //   gap/edge checks. The pad only fires while the player is grounded on its collider
+            //   inside a 1.2 m radius and off its 0.5 s cooldown, so plenty of approaches are
+            //   refused. The previous version aimed at the checkpoint and disabled edge
+            //   detection as soon as a pad came within 4.5 m, so a refused launch sent the bot
+            //   straight over the cliff behind the pad with its cliff detection switched off.
+            //
+            //   AFTER the launch (verified by the upward kick, not assumed) — commit to the arc
+            //   and ignore the gap, because the bot is already flying over it. Ground jumps stay
+            //   suppressed in Update (that was the bounce loop); the one deliberate jump is the
+            //   mid-air assist past the apex, which is what lets a non-glide character reach a
+            //   raised platform.
             if (m_bounceMode)
             {
                 m_lastLoggedObstacle    = null;
@@ -1566,8 +2432,40 @@ namespace AdventureMultiplayer
                               $"{transform.position:F1} → cp{m_nextCpIdx}");
                 }
 
-                Vector3 aim = StoneCheckpointDir(transform.position);
-                return aim.sqrMagnitude > 0.01f ? aim : transform.forward;
+                // Launched: commit to the arc. Only here is it safe to ignore the gap past the
+                // pad, because the bot is already flying over it.
+                if (m_bounceLaunched)
+                {
+                    Vector3 flight = StoneCheckpointDir(transform.position);
+                    return flight.sqrMagnitude > 0.01f ? flight : transform.forward;
+                }
+
+                // NOT launched yet. Steer at the pad, never at the checkpoint — aiming at the
+                // checkpoint is what used to march bots ACROSS the pad and off the cliff behind
+                // it (61 deaths in the water at z≈-56 on DeathRunL1, all 5.5 m past the pad).
+                if (TryGetBouncePadTop(out Vector3 padTop))
+                {
+                    Vector3 toPad = Vector3.ProjectOnPlane(padTop - transform.position, Vector3.up);
+
+                    // Backing off after a refused launch — walk away from the pad so the next
+                    // approach starts from solid ground with the cooldown expired.
+                    if (Time.time < m_bounceRetryUntil)
+                        return toPad.sqrMagnitude > 0.01f ? -toPad.normalized : -transform.forward;
+
+                    // Inside the pad's 1.2 m detection radius: stand still and let it fire.
+                    // Creeping on from here is precisely what carried bots over the far edge,
+                    // and a stationary bot gives the pad the clean grounded frame it needs.
+                    // If it still doesn't fire, the retry timer above breaks the wait.
+                    if (toPad.sqrMagnitude < 0.36f) return Vector3.zero;
+
+                    if (toPad.sqrMagnitude > 0.01f)
+                        return toPad.normalized;
+                }
+
+                // No pad cached (it armed off a spherecast that has since missed). Fall back to
+                // the checkpoint heading, but WITHOUT the early return — dropping through to the
+                // checks below keeps gap/edge detection live, so a bot in this state can still
+                // refuse to walk off a ledge. That safety net is exactly what was missing.
             }
 
             // ── Designer hint: WalkThrough ───────────────────────────────────────
@@ -1988,9 +2886,25 @@ namespace AdventureMultiplayer
                                      || RideablePlatformAhead(result, gapProbeDistance + 1.5f, out _);
 
             bool recentlyGrounded = Time.time - m_lastGroundedTime <= k_recentGroundedWindow;
-            if (!onBridge && !platformCoversGap
+
+            // NOTE: the running long-jump is NOT decided here. This method has ~20 early returns
+            // above (hazard waits, obstacle detours, crossing modes), and anything that returns
+            // first starves whatever follows. That is exactly what happened on the DeathRunL1
+            // plank section: 56 'pendulum_ball' sightings sent the bot down the timed-hazard
+            // branch every frame, so the gap logic at the bottom of this method never ran once —
+            // the whole race produced zero GAP log lines while bots walked into the gap anyway.
+            // The scan now lives in EvaluateGapJump(), called directly from Update() where
+            // nothing can starve it. What remains here is only the short-hole hop.
+            if (!m_gapJumpArmed && !onBridge && !platformCoversGap
                 && !groundCenter && !groundLeft && !groundRight && recentlyGrounded)
-                TryJump();
+            {
+                // Nothing underfoot just ahead and the long-jump planner did not claim this.
+                // Only hop when the close probe can actually see the far side — jumping blind
+                // is how bots launched into water they could never have crossed.
+                if (Physics.Raycast(transform.position + result * (gapProbeDistance + 1.5f) + Vector3.up * 0.5f,
+                        Vector3.down, gapProbeDepth + 1f, obstacleLayer, QueryTriggerInteraction.Ignore))
+                    TryJump();
+            }
 
             return result;
         }
@@ -2063,8 +2977,15 @@ namespace AdventureMultiplayer
             // XZ barely changes at the top. Grounded in bounce mode still escalates normally,
             // so a bot that somehow stays bounce-locked on the pad eventually force-respawns
             // back to the checkpoint instead of bouncing there forever.
-            if (OnRideablePlatform() || (m_bridgeMode && !bridgeHardStuck) || (m_stoneMode && !stoneHardStuck)
-                || (m_bounceMode && !m_player.isGrounded))
+            // Standing still to let a swinging hazard pass is a deliberate decision, not being
+            // stuck — and it is self-limiting (k_maxTimedHazardWait forces a commit). Escalating
+            // here would nudge the bot forward into the swing's arc, or off the narrow board it
+            // is waiting on, which is the exact death this timing exists to prevent.
+            // In the air on a route (jump / bounce arc): the XZ barely moves at the top of a
+            // launch — not stuck. Escalating there re-targeted the route backwards mid-air.
+            bool routeAirborne = m_routeActive && !m_player.isGrounded;
+            if (m_routeWaiting || routeAirborne || OnRideablePlatform() || (m_bridgeMode && !bridgeHardStuck) || (m_stoneMode && !stoneHardStuck)
+                || (m_bounceMode && !m_player.isGrounded) || m_swingHold)
             {
                 m_stuckLevel   = 0;
                 m_lastStuckPos = transform.position;
@@ -2088,6 +3009,14 @@ namespace AdventureMultiplayer
             Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') stuck level {m_stuckLevel} " +
                       $"(moved {moved:F2}m) at {transform.position}, checkpoint target {m_nextCpIdx}.");
 
+            // On a route, a random jump/nudge on a Careful segment (bridge, disc) throws the bot
+            // off — go straight to backing up. Either way re-pick the route target afterwards.
+            if (m_routeActive)
+            {
+                m_routeResyncAt = Time.time;
+                if (m_routeCareful && m_stuckLevel < 3) m_stuckLevel = 3;
+            }
+
             switch (m_stuckLevel)
             {
                 case 1:
@@ -2095,6 +3024,7 @@ namespace AdventureMultiplayer
                     break;
                 case 2:
                     m_input.jumpQueued = true;
+                    if (m_routeActive) break; // no sideways nudge off the authored line
 
                     // Prefer a hazard-free side where possible instead of a blind coin-flip —
                     // on a narrow bridge/ledge a random nudge can just as easily aim straight
@@ -2124,6 +3054,7 @@ namespace AdventureMultiplayer
                                       $"at {transform.position} (forced respawn #{m_forcedRespawns}) — " +
                                       "this is a genuine interruption, not routine navigation.");
                     m_respawner?.RespawnNow();
+                    m_routeResyncAt = Time.time + 0.3f;
                     break;
             }
         }
@@ -2272,6 +3203,364 @@ namespace AdventureMultiplayer
             // bot won't always hit the exact textbook peak, and clearing an obstacle with room to
             // spare reads as more natural than shaving it by centimetres.
             wallJumpHeight = peakHeight * 0.8f;
+
+            // How far this character can actually carry a running jump, from its own stats.
+            // maxJumpHeight is an initial VELOCITY here (hence v²/2g above), so the flight time
+            // for a level landing is 2v/g and the reach is that times the running speed. Same
+            // 0.8 safety margin, for the same reason. Measured range across the five characters
+            // is 5.7 m (Bruno) to 8.2 m (Spike) before the margin.
+            float airTime  = 2f * stats.maxJumpHeight / stats.gravity;
+            float topSpeed = Mathf.Max(stats.runningTopSpeed, stats.topSpeed);
+            float reach    = topSpeed * airTime;
+
+            // Two figures, because the two callers deserve different confidence.
+            // The geometric scan is GUESSING where the far side is, so it keeps the 0.8 margin
+            // and only commits to jumps it is comfortable with. A designer-marked jump line is an
+            // explicit instruction with both ends given, so it is judged against the character's
+            // true reach — otherwise the margin alone would make Bruno, Bolt and Gale refuse the
+            // 5.2 m plank gap on DeathRunL1 that all three can physically clear.
+            m_gapJumpRange    = reach * 0.8f;
+            m_gapJumpRangeMax = reach * 0.95f;
+        }
+
+        /// <summary>
+        /// Decide whether to stand and let a swinging hazard pass.
+        ///
+        /// Driven from the SPHERE sensor rather than the forward raycast, because that is the
+        /// only detector that actually sees a pendulum ball (339 sightings vs 5 ray-driven waits
+        /// across the play-tests). Called from Update() so no early return in ObstacleAvoidance
+        /// can starve it — the mistake that made the first gap-jump attempt a no-op.
+        ///
+        /// The judgement is direction-based, not phase-based: a ball that is receding is safe to
+        /// walk behind, one that is closing is not. That needs no knowledge of the swing's period
+        /// and works for any moving hazard, which matters because these pendulums use
+        /// useRandomDelay, so their phase cannot be computed ahead of time.
+        /// </summary>
+        private void EvaluateSwingHazard()
+        {
+            m_swingHold = false;
+
+            // The crossing modes own their own footing and timing.
+            if (m_bridgeMode || m_stoneMode || m_bounceMode) { m_swingTracked = null; return; }
+
+            // Airborne, there is nothing to stand still for.
+            if (m_player == null || !m_player.isGrounded) { m_swingTracked = null; return; }
+
+            // Easy bots barge through and take the hit — that is the tier's character.
+            if (difficulty == BotDifficulty.Easy) { m_swingTracked = null; return; }
+
+            if (!m_reading.Valid || m_reading.Type != BotObstacleType.TimedHazard)
+            {
+                m_swingTracked = null;
+                m_swingLogged  = null;
+                return;
+            }
+
+            Collider hz  = m_reading.Collider;
+            Vector3  pos = transform.position;
+            float    dist = Vector3.Distance(pos, hz.ClosestPoint(pos));
+
+            // First sample of a new hazard: record it, judge from the next frame.
+            if (hz != m_swingTracked)
+            {
+                m_swingTracked   = hz;
+                m_swingPrevDist  = dist;
+                m_swingRate      = 0f;
+                m_swingHoldStart = Time.time;
+                return;
+            }
+
+            float dt = Time.deltaTime;
+            if (dt > 0.0001f) m_swingRate = (m_swingPrevDist - dist) / dt;
+            m_swingPrevDist = dist;
+
+            // Hard spots it from further out but only holds while it is actually coming at him,
+            // so he slips through the moment it starts receding. Medium holds whenever it is
+            // near, regardless of direction — safe, but it wastes time and reads as less sharp.
+            bool  hard    = difficulty == BotDifficulty.Hard;
+            float radius  = hard ? k_swingDangerRadius * 1.5f : k_swingDangerRadius;
+            bool  closing = m_swingRate > 0.2f;
+            bool  wait    = dist < radius && (!hard || closing || dist < 1.8f);
+
+            if (!wait)
+            {
+                m_swingHoldStart = Time.time;
+                return;
+            }
+
+            // Safety valve: never stand forever. A hazard whose arc always overlaps us would
+            // otherwise leave the bot parked until stuck-recovery walks it off the board.
+            if (Time.time - m_swingHoldStart > k_maxTimedHazardWait)
+            {
+                if (m_swingLogged != hz)
+                {
+                    m_swingLogged = hz;
+                    Debug.LogWarning($"[RaceBotBrain] Bot {BotId} ('{name}') waited {k_maxTimedHazardWait:F0}s " +
+                                     $"on swinging '{hz.name}' — committing through it.");
+                }
+                return;
+            }
+
+            m_swingHold = true;
+            if (m_swingLogged != hz)
+            {
+                m_swingLogged = hz;
+                Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') SWING HOLD for '{hz.name}' at " +
+                          $"{dist:F1} m (rate {m_swingRate:+0.0;-0.0} m/s) — letting it pass.");
+            }
+        }
+
+        /// <summary>
+        /// Drives the running long-jump, straight from Update().
+        ///
+        /// Deliberately NOT inside ObstacleAvoidance: that method has around twenty early
+        /// returns, and on the DeathRunL1 plank climb the timed-hazard branch (56 'pendulum_ball'
+        /// sightings) returned every single frame, so gap logic placed at the end of it never
+        /// executed — a whole race produced zero GAP log lines while bots walked straight into
+        /// the gap. Deciding it here means no other behaviour can starve it.
+        /// </summary>
+        private void EvaluateGapJump()
+        {
+            // The crossing modes own their own footing and their own jumps; a stale "gap ahead"
+            // would otherwise force sprint speed through a bridge or a disc crossing.
+            if (m_bridgeMode || m_stoneMode || m_bounceMode)
+            {
+                m_gapJumpArmed = false;
+                return;
+            }
+
+            // A designer-marked jump beats the geometric scan outright — see m_jumpHint.
+            if (ResolveJumpLine()) return;
+
+            // Once a gap is armed, rescan EVERY frame. The bot is sprinting at 7-9 m/s by then,
+            // so the throttled 0.1 s interval would move it most of a metre between samples and
+            // the narrow take-off window could be stepped straight over. Away from a gap the
+            // throttle is fine and keeps the raycast cost down.
+            if (m_gapJumpArmed || Time.time >= m_nextGapScan)
+            {
+                m_nextGapScan = Time.time + k_gapScanInterval;
+
+                Vector3 heading = m_input.desiredMoveDirection.sqrMagnitude > 0.04f
+                    ? m_input.desiredMoveDirection
+                    : transform.forward;
+                ScanGapAhead(heading);
+            }
+
+            // Take off from the lip, not from wherever a fixed-distance probe first noticed the
+            // hole — every metre of early take-off is a metre lost off the far end of the jump.
+            // Navigate() is meanwhile holding full speed + run (see the speed block).
+            if (m_gapJumpArmed && m_gapEdgeDist <= k_gapTakeoffDist && m_player.isGrounded)
+                TryJump();
+        }
+
+        /// <summary>
+        /// Handle a designer-placed jump line (<see cref="BotObstacleHint.Behavior.JumpOver"/>
+        /// with jumpFrom/jumpTo markers). Returns true when it has taken control of the jump,
+        /// in which case the geometric scan is skipped entirely.
+        ///
+        /// The bot steers at the take-off marker, sprints along the marked line, and jumps when
+        /// it reaches the lip. Because both ends are given, none of the things that defeat a
+        /// raycast here matter: the far side can be moving, and water below can have a solid
+        /// collider, and the answer is still exact.
+        ///
+        /// A gap wider than this character's range is refused and logged — that is a level
+        /// balance question (which characters can make this jump?), not a bot bug, and it should
+        /// read that way in the log.
+        /// </summary>
+        private bool ResolveJumpLine()
+        {
+            Vector3 pos = transform.position;
+
+            // Re-acquire periodically; hold the current one while it stays relevant.
+            if (Time.time >= m_nextJumpHintScan)
+            {
+                m_nextJumpHintScan = Time.time + k_jumpHintScanInterval;
+
+                BotObstacleHint best = null;
+                float bestScore = float.MaxValue;
+
+                int n = Physics.OverlapSphereNonAlloc(pos, k_jumpHintRange, s_jumpHintBuffer,
+                            obstacleLayer, QueryTriggerInteraction.Collide);
+                for (int i = 0; i < n; i++)
+                {
+                    var h = BotObstacleClassifier.FindHint(s_jumpHintBuffer[i]);
+                    if (h == null || h.behavior != BotObstacleHint.Behavior.JumpOver) continue;
+                    if (!h.HasJumpLine) continue;
+
+                    // Only a jump that actually advances us toward the checkpoint.
+                    Vector3 toCp = Vector3.ProjectOnPlane(CurrentCheckpointPos() - pos, Vector3.up);
+                    Vector3 span = Vector3.ProjectOnPlane(h.jumpTo.position - h.jumpFrom.position, Vector3.up);
+                    if (toCp.sqrMagnitude > 0.01f && span.sqrMagnitude > 0.01f
+                        && Vector3.Dot(toCp.normalized, span.normalized) < 0.2f) continue;
+
+                    float d = Vector3.Distance(pos, h.jumpFrom.position);
+                    if (d < bestScore) { bestScore = d; best = h; }
+                }
+                m_jumpHint = best;
+            }
+
+            if (m_jumpHint == null || !m_jumpHint.HasJumpLine)
+            {
+                m_jumpLineActive = false;
+                return false;
+            }
+
+            m_jumpFrom = m_jumpHint.jumpFrom.position;
+            m_jumpTo   = m_jumpHint.jumpTo.position;
+
+            float span2   = m_jumpHint.JumpSpan;
+            float toLip   = Vector3.ProjectOnPlane(m_jumpFrom - pos, Vector3.up).magnitude;
+            bool  past    = Vector3.Dot(Vector3.ProjectOnPlane(m_jumpTo - m_jumpFrom, Vector3.up).normalized,
+                                        Vector3.ProjectOnPlane(pos - m_jumpFrom, Vector3.up)) > 0.5f;
+
+            // Already across (or launched) — release control and let normal nav resume.
+            if (past || !m_player.isGrounded)
+            {
+                m_jumpLineActive = false;
+                return false;
+            }
+
+            if (m_gapJumpRangeMax <= 0f) CalibrateJumpHeightFromStats();
+            if (m_gapJumpRangeMax > 0f && span2 > m_gapJumpRangeMax)
+            {
+                if (Time.time - m_gapLogged > 3f)
+                {
+                    m_gapLogged = Time.time;
+                    Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') MARKED JUMP of {span2:F1} m " +
+                              $"exceeds its {m_gapJumpRangeMax:F1} m reach — refusing. " +
+                              "(Level balance: this character cannot make this gap.)");
+                }
+                m_jumpLineActive = false;
+                m_gapJumpArmed   = false;
+                return true;   // still ours — do NOT let the geometric scan launch it anyway
+            }
+
+            m_jumpLineActive = true;
+            m_gapJumpArmed   = true;     // Navigate() sprints; see the speed block
+            m_gapEdgeDist    = toLip;
+
+            if (Time.time - m_gapLogged > 3f)
+            {
+                m_gapLogged = Time.time;
+                Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') MARKED JUMP {span2:F1} m " +
+                          $"(reach {m_gapJumpRangeMax:F1} m) — lip {toLip:F1} m ahead.");
+            }
+
+            if (toLip <= k_gapTakeoffDist)
+            {
+                TryJump();
+                Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') MARKED JUMP takeoff at {pos:F1} " +
+                          $"→ {m_jumpTo:F1}");
+            }
+            return true;
+        }
+
+        /// <summary>World position of the checkpoint currently being steered toward.</summary>
+        private Vector3 CurrentCheckpointPos()
+        {
+            if (m_checkpoints == null || m_nextCpIdx >= m_checkpoints.Length) return transform.position;
+            var cp = m_checkpoints[m_nextCpIdx];
+            return cp != null ? cp.transform.position : transform.position;
+        }
+
+        /// <summary>
+        /// Look for a gap ahead that needs a running jump, and decide whether this character can
+        /// actually clear it.
+        ///
+        /// Walks forward in <see cref="k_gapStepSize"/> steps probing downward at each one, to
+        /// find two things: the take-off lip (first step with no footing) and the landing (first
+        /// step after it that has footing again, at a height the bot could plausibly land on).
+        ///
+        /// Sets <see cref="m_gapJumpArmed"/> when a landing exists within this character's reach.
+        /// Leaves it false when the gap is too wide — and that case matters as much as the jump
+        /// itself, because the old code would launch into an unclearable gap regardless.
+        /// </summary>
+        private void ScanGapAhead(Vector3 dir)
+        {
+            m_gapJumpArmed = false;
+            m_gapEdgeDist  = 0f;
+
+            if (m_player == null) return;
+
+            // Range is normally computed once at spawn, but the stats asset can still be null
+            // then (ManaSystem swaps in a runtime clone), which would leave the range at zero and
+            // silently disable this whole behaviour. Recompute on demand until it is valid.
+            if (m_gapJumpRange <= 0f)
+            {
+                CalibrateJumpHeightFromStats();
+                if (m_gapJumpRange <= 0f)
+                {
+                    if (Time.time - m_gapLogged > 5f)
+                    {
+                        m_gapLogged = Time.time;
+                        Debug.LogWarning($"[RaceBotBrain] Bot {BotId} ('{name}') has no jump range yet " +
+                                         "— PlayerStats unavailable, gap jumping disabled this frame.");
+                    }
+                    return;
+                }
+            }
+
+            dir = Vector3.ProjectOnPlane(dir, Vector3.up);
+            if (dir.sqrMagnitude < 0.01f) return;
+            dir.Normalize();
+
+            // Only meaningful with ground under us (or just left behind — bumpy terrain makes
+            // isGrounded flicker, and losing the scan on those frames is how a jump gets missed).
+            if (Time.time - m_lastGroundedTime > k_recentGroundedWindow) return;
+
+            Vector3 basePos = transform.position;
+            float   maxScan = m_gapJumpRange + 2f;
+            float   edge    = -1f;
+
+            // Anything this far below the bot is not footing — it is the pit floor, or the water.
+            // water_001 carries a SOLID (non-trigger) MeshCollider, so a plain downward raycast
+            // happily reports the surface of the lake as "ground" and the bot concludes there is
+            // no gap at all. Every probe below is height-gated for that reason.
+            float minFootingY = basePos.y - (wallJumpHeight + 2f);
+
+            for (float d = k_gapStepSize; d <= maxScan; d += k_gapStepSize)
+            {
+                Vector3 probe = basePos + dir * d + Vector3.up * 0.5f;
+                bool hasGround = Physics.Raycast(probe, Vector3.down, out RaycastHit gh,
+                                    k_gapProbeDown, obstacleLayer, QueryTriggerInteraction.Ignore)
+                                 && gh.point.y >= minFootingY;
+
+                if (edge < 0f)
+                {
+                    // Still looking for the lip.
+                    if (!hasGround) edge = d;
+                    continue;
+                }
+
+                // Past the lip — the first real footing we find is the landing.
+                if (!hasGround) continue;
+
+                float gapWidth = d - edge;
+
+                // Too narrow to be worth a running jump. Leave it to the ordinary step/hop and
+                // do NOT arm — arming forces sprint speed and a committed take-off, which on a
+                // plank seam throws the bot off the board it is standing on.
+                if (gapWidth < k_gapMinWidth) return;
+
+                if (gapWidth <= m_gapJumpRange)
+                {
+                    m_gapJumpArmed = true;
+                    m_gapEdgeDist  = edge;
+                    if (Time.time - m_gapLogged > 2f)
+                    {
+                        m_gapLogged = Time.time;
+                        Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') GAP {gapWidth:F1} m at " +
+                                  $"{edge:F1} m — range {m_gapJumpRange:F1} m, running at it.");
+                    }
+                }
+                else if (Time.time - m_gapLogged > 2f)
+                {
+                    m_gapLogged = Time.time;
+                    Debug.Log($"[RaceBotBrain] Bot {BotId} ('{name}') GAP {gapWidth:F1} m at " +
+                              $"{edge:F1} m is WIDER than its {m_gapJumpRange:F1} m range — not jumping.");
+                }
+                return;
+            }
         }
 
         // ── Difficulty ────────────────────────────────────────────────────────
@@ -2528,7 +3817,7 @@ namespace AdventureMultiplayer
         // stalled there forever. Its own lateral push, plus the existing gap-probe and
         // hazard-below checks, already handle staying on / falling off correctly — the AI just
         // needs to not treat the log itself as something to stop for.
-        private static bool IsWalkableLog(Collider col)
+        public static bool IsWalkableLog(Collider col)
         {
             return col.GetComponent<RotatingLogObstacle>() != null
                 || col.GetComponentInParent<RotatingLogObstacle>() != null
@@ -2544,7 +3833,7 @@ namespace AdventureMultiplayer
         // lets it carry them; PLAYER TWO's entity-attachment system does exactly that for a
         // grounded bot with no bot-specific code, so all the AI has to do is walk onto it.
         // Checks Platform (the base class DynamicPlatform and MovingPlatform both extend).
-        private static bool IsRideablePlatform(Collider col)
+        public static bool IsRideablePlatform(Collider col)
         {
             if (col == null) return false;
             return col.GetComponentInParent<Platform>()  != null
@@ -2589,7 +3878,7 @@ namespace AdventureMultiplayer
         // gap, not detour around it or jump on it. Checks the collider, an ancestor, or a
         // descendant (the launch component and the MeshCollider proxy can be on different
         // GameObjects in the prefab).
-        private static bool IsBouncePlatform(Collider col)
+        public static bool IsBouncePlatform(Collider col)
         {
             if (col == null) return false;
             return col.GetComponentInParent<JumpingPlatform>()  != null
@@ -2604,7 +3893,10 @@ namespace AdventureMultiplayer
         private bool ResolveBouncePlatform()
         {
             if (m_player != null && m_player.isGrounded && IsBouncePlatform(m_player.groundHit.collider))
+            {
+                m_bouncePad = m_player.groundHit.collider;
                 return true;
+            }
 
             if (m_checkpoints == null || m_nextCpIdx >= m_checkpoints.Length) return false;
             var cp = m_checkpoints[m_nextCpIdx];
@@ -2616,14 +3908,39 @@ namespace AdventureMultiplayer
             if (Physics.SphereCast(o, 0.6f, toCp.normalized, out RaycastHit hit, 4.5f,
                     obstacleLayer, QueryTriggerInteraction.Ignore)
                 && IsBouncePlatform(hit.collider))
+            {
+                m_bouncePad = hit.collider;
                 return true;
+            }
 
             int n = Physics.OverlapSphereNonAlloc(transform.position + Vector3.up * 0.3f, 1.6f,
                 s_bounceBuffer, obstacleLayer, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < n; i++)
-                if (IsBouncePlatform(s_bounceBuffer[i])) return true;
+                if (IsBouncePlatform(s_bounceBuffer[i]))
+                {
+                    m_bouncePad = s_bounceBuffer[i];
+                    return true;
+                }
 
             return false;
+        }
+
+        /// <summary>
+        /// The point on top of the cached pad that the bot should stand on, or null when no pad
+        /// is cached.
+        ///
+        /// Mirrors JumpingPlatform's own detection anchor (<c>bounds.center + up * extents.y</c>)
+        /// so "where the bot walks to" and "where the pad looks for a player" are the same place.
+        /// Deliberately NOT the pad's transform position: on trampoline_002 that origin is below
+        /// the walkable surface, and steering at it wedges the bot in the base of the prop.
+        /// </summary>
+        private bool TryGetBouncePadTop(out Vector3 top)
+        {
+            top = Vector3.zero;
+            if (m_bouncePad == null) return false;
+            Bounds b = m_bouncePad.bounds;
+            top = b.center + Vector3.up * b.extents.y;
+            return true;
         }
 
         // ── Designer obstacle hints ──────────────────────────────────────────
@@ -2860,7 +4177,7 @@ namespace AdventureMultiplayer
         // obstacle prefabs (e.g. hammer) put ObstacleKnockback on a child (the swinging head)
         // while a raycast can also hit a separate, sibling-less static pole/root collider with no
         // knockback component of its own but with the hazard as a descendant.
-        private static ObstacleKnockback FindObstacleKnockback(Collider col)
+        public static ObstacleKnockback FindObstacleKnockback(Collider col)
         {
             var ok = col.GetComponent<ObstacleKnockback>();
             if (ok != null) return ok;
@@ -2893,17 +4210,43 @@ namespace AdventureMultiplayer
         // their crossing around rather than jumping through or detouring past. Checks the same
         // collider-then-up-then-down hierarchy as FindObstacleKnockback, since the motion
         // component and the knockback component don't always live on the same GameObject.
-        private static bool IsTimedHazard(Collider col)
+        public static bool IsTimedHazard(Collider col)
         {
             // A rideable platform that also spins (rotating disc bridge) is a RIDE, never a
             // wait-out hazard — check this before the motion-component scan below.
             if (IsRideablePlatform(col)) return false;
 
+            // Self or an ancestor carries the motion → this collider genuinely moves. (A child of
+            // something that swings swings with it, so upward always counts.)
             foreach (var t in k_motionComponentTypes)
             {
                 if (col.GetComponent(t) != null) return true;
                 if (col.GetComponentInParent(t) != null) return true;
-                if (col.GetComponentInChildren(t) != null) return true;
+            }
+
+            // Motion found only in a CHILD is the interesting case, and the old code got it
+            // wrong by treating it the same as the above. DeathRunL1's pendulum is the shape
+            // that exposed it:
+            //
+            //     pendulum       (obstacle_11_001)  static MeshCollider — the walkable board
+            //     └── pendulum_ball (obstacle_11_002)  OscillateRotation + its OWN collider
+            //
+            // The ball hangs off the board, so a downward search reported the walkable board as
+            // a swinging hazard. Bots stopped to "time" the very platform they had to walk
+            // across, hesitating and detouring at its edge — the level's worst death cluster.
+            //
+            // The rule that fixes it without breaking anything else: a moving child that has its
+            // OWN collider is separately detectable as a hazard in its own right, so this parent
+            // collider is just the static mount it hangs from — walkable. Only when the moving
+            // child has no collider of its own does the parent's collider stand in for it, and
+            // then it really is the hazard. That keeps obstacles like the hammer and spinner —
+            // where the motion script and the collider sit on different objects — behaving
+            // exactly as before.
+            foreach (var t in k_motionComponentTypes)
+            {
+                var moving = col.GetComponentInChildren(t);
+                if (moving == null) continue;
+                if (((Component)moving).GetComponentInChildren<Collider>() == null) return true;
             }
             return false;
         }

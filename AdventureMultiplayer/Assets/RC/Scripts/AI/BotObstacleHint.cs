@@ -62,6 +62,26 @@ namespace AdventureMultiplayer
 
         public bool HasStoneCrossing => stoneStart != null && stoneEnd != null;
 
+        [Header("Gap jump (optional)")]
+        [Tooltip("For Behavior.JumpOver: one TAKE-OFF point on the lip the bot should leave " +
+                 "from, and one LANDING point on the far side. The bot runs to the take-off " +
+                 "point, sprints along the line, and jumps AT the lip — no geometry guessing.\n\n" +
+                 "Worth using wherever a scan can't be trusted: a far side that moves (the " +
+                 "tilting planks rock 45 degrees every 1.5 s, so a raycast reads a different " +
+                 "height every frame), or water below — water_001 has a SOLID collider, so a " +
+                 "downward probe happily reports the lake surface as landable ground.\n\n" +
+                 "If the gap is wider than the character's own jump range the bot refuses it " +
+                 "and says so in the log, which is a level-design signal rather than a bug.")]
+        public Transform jumpFrom;
+        public Transform jumpTo;
+
+        public bool HasJumpLine => jumpFrom != null && jumpTo != null;
+
+        /// <summary>Horizontal length of the jump, ignoring the height difference.</summary>
+        public float JumpSpan => HasJumpLine
+            ? Vector3.ProjectOnPlane(jumpTo.position - jumpFrom.position, Vector3.up).magnitude
+            : 0f;
+
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
@@ -79,6 +99,28 @@ namespace AdventureMultiplayer
                 UnityEngine.Gizmos.DrawSphere(stoneStart.position, 0.5f);
                 UnityEngine.Gizmos.DrawSphere(stoneEnd.position, 0.5f);
                 UnityEngine.Gizmos.DrawLine(stoneStart.position, stoneEnd.position);
+            }
+
+            if (HasJumpLine)
+            {
+                // Orange, and drawn as an arc rather than a straight line so the take-off end
+                // and the landing end are obvious at a glance in the Scene view.
+                UnityEngine.Gizmos.color = new Color(1f, 0.55f, 0.1f, 1f);
+                Vector3 a = jumpFrom.position;
+                Vector3 b = jumpTo.position;
+                UnityEngine.Gizmos.DrawSphere(a, 0.35f);
+                UnityEngine.Gizmos.DrawWireSphere(b, 0.45f);
+
+                float arc  = Vector3.Distance(a, b) * 0.25f;
+                Vector3 prev = a;
+                for (int i = 1; i <= 16; i++)
+                {
+                    float t = i / 16f;
+                    Vector3 p = Vector3.Lerp(a, b, t);
+                    p.y += Mathf.Sin(t * Mathf.PI) * arc;   // parabola-ish, purely indicative
+                    UnityEngine.Gizmos.DrawLine(prev, p);
+                    prev = p;
+                }
             }
         }
 #endif
